@@ -6,6 +6,7 @@ namespace EnnuiScript
 {
 	public class Class1
 	{
+		private Parser parser;
 		private SymbolSpace globalSpace;
 
 		private void SetupDefn()
@@ -99,20 +100,24 @@ namespace EnnuiScript
 			this.globalSpace.Bind("+", add);
 		}
 
-		private static Item ParseAndEvaluate(SymbolSpace space, string instring)
+		private Item ParseAndEvaluate(string instring)
 		{
-			var p = new Parser();
-			return p.Parse(instring).Evaluate(space);
+			return parser.Parse(instring).Evaluate(this.globalSpace);
 		}
 
 		public void Main()
 		{
+			this.parser = new Parser();
 			this.globalSpace = new SymbolSpace();
+
+			// setup builtins
 			this.SetupAdd();
 			this.SetupDefn();
 
-			ParseAndEvaluate(this.globalSpace, "(=> 'double :Number '(test :Number) '(+ test test))");
-			var result = ParseAndEvaluate(this.globalSpace, "(double 10)");
+			this.ParseAndEvaluate("(=> 'double :Number '(test :Number) '(+ test test))");
+			var result = this.ParseAndEvaluate("(double 10)");
+
+			var a = 0;
 		}
 	}
 }
