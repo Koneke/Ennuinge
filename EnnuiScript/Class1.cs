@@ -98,7 +98,7 @@ namespace EnnuiScript
 								pair.Item2.ItemType == ItemType.Type);
 					}
 				),
-				Function = args => {
+				Function = (space, args) => {
 					var symbol = args[0] as SymbolItem;
 					var returnType = args[1] as TypeItem;
 					var argumentList = (args[2] as ListItem).expression
@@ -120,8 +120,22 @@ namespace EnnuiScript
 						// bind fnargs,
 						// evaluate body
 						// pop symbolspace
-						Function = fnargs => null
+						Function = (fnspace, fnargs) => {
+							var newSpace = new SymbolSpace {Parent = space};
+
+							for (var index = 0; index < fnargs.Count; index++)
+							{
+								newSpace.Bind(
+									(argumentList[index].Item1 as SymbolItem).name,
+									fnargs[index]);
+							}
+
+							body = body.Unquote() as ListItem;
+							return body.Evaluate(newSpace);
+						}
 					};
+
+					space.Bind(symbol.name, resultingInvokeable);
 
 					return resultingInvokeable;
 				}
@@ -140,7 +154,7 @@ namespace EnnuiScript
 					args => args.All(arg => arg.ItemType == ItemType.Number)
 				),
 
-				Function = args => new ValueItem(
+				Function = (space, args) => new ValueItem(
 					ItemType.Number,
 					args
 						.Select(arg => arg as ValueItem)
@@ -177,15 +191,23 @@ namespace EnnuiScript
 
 			var exp2 = new ListItem(
 				new SymbolItem("=>"),
-				new SymbolItem(null).Quote(),
+				new SymbolItem("my-fn").Quote(),
 				new TypeItem(ItemType.Number),
 				new ListItem(
-					new SymbolItem(null),
+					new SymbolItem("test"),
 					new TypeItem(ItemType.Number)).Quote(),
-				new ListItem().Quote()
+				new ListItem(
+					new SymbolItem("+"),
+					new SymbolItem("test"),
+					new SymbolItem("test")).Quote()
 			);
 
+			var exp3 = new ListItem(
+				new SymbolItem("my-fn"),
+				new ValueItem(ItemType.Number, 10.0));
+
 			var result2 = exp2.Evaluate(space);
+			var result3 = exp3.Evaluate(space);
 
 			var result = exp.Evaluate(space);
 			var a = 0;
@@ -245,7 +267,7 @@ namespace EnnuiScript
 		}
 
 		public List<Func<List<Item>, bool>> Demands;
-		public Func<List<Item>, Item> Function;
+		public Func<SymbolSpace, List<Item>, Item> Function;
 		public ItemType ReturnType;
 
 		public Invokeable() : base(ItemType.Invokeable)
@@ -254,9 +276,8 @@ namespace EnnuiScript
 
 		private bool EvaluateDemands(List<Item> args)
 		{
-			for (int index = 0; index < this.Demands.Count; index++)
+			foreach (var demand in this.Demands)
 			{
-				var demand = this.Demands[index];
 				if (!demand(args))
 				{
 					throw new Exception("Failed demands.");
@@ -266,14 +287,14 @@ namespace EnnuiScript
 			return true;
 		}
 
-		public Item Invoke(List<Item> items)
+		public Item Invoke(SymbolSpace space, List<Item> items)
 		{
 			if (!this.EvaluateDemands(items))
 			{
 				throw new Exception("Failed demands.");
 			}
 
-			var result = this.Function(items);
+			var result = this.Function(space, items);
 
 			if (result.ItemType != this.ReturnType)
 			{
@@ -337,6 +358,12 @@ namespace EnnuiScript
 		{
 		}
 
+		public Item Unquote()
+		{
+			this.isQuoted = false;
+			return this;
+		}
+
 		public Item Quote()
 		{
 			this.isQuoted = true;
@@ -346,7 +373,7 @@ namespace EnnuiScript
 
 	public class SymbolItem : EvaluateableItem
 	{
-		private string name;
+		public string name;
 
 		public SymbolItem(string name) : base(ItemType.Symbol)
 		{
@@ -443,7 +470,7 @@ namespace EnnuiScript
 				throw new Exception();
 			}
 
-			return head.Invoke(tail);
+			return head.Invoke(space, tail);
 		}
 	}
 }
