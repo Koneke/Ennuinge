@@ -165,6 +165,12 @@ namespace EnnuiScript
 			this.builtins.Add("+", add);
 		}
 
+		private Item ParseAndEvaluate(string instring, SymbolSpace space)
+		{
+			var p = new Parser();
+			return p.Parse(instring).Evaluate(space);
+		}
+
 		public void Main()
 		{
 			this.SetupAdd();
@@ -172,14 +178,19 @@ namespace EnnuiScript
 
 			var exp = new ListItem();
 
-			/*exp.Add(
-				new Symbol(add),
-				new ValueItem(ItemType.Number, 1.0),
-				new ValueItem(ItemType.Number, 1.0));*/
-
 			var space = new SymbolSpace();
 			space.Bind("+", this.builtins["+"]);
 			space.Bind("=>", this.builtins["=>"]);
+
+			var p = new Parser();
+
+			Item res = p.Parse(
+				"(=> 'double :Number '(test :Number) '(+ test test))"
+			);
+
+			(res as ListItem).Evaluate(space);
+
+			res = p.Parse("(double 10)").Evaluate(space);
 
 			exp.Add(
 				new SymbolItem("+"),
