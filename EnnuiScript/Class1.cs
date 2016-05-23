@@ -25,6 +25,46 @@ namespace EnnuiScript
 		}
 	}
 
+	public class SymbolSpace
+	{
+		private Dictionary<string, Item> Bindings;
+		public SymbolSpace Parent;
+
+		public SymbolSpace()
+		{
+			this.Bindings = new Dictionary<string, Item>();
+		}
+
+		public void Bind(string symbol, Item item)
+		{
+			if (this.Bindings.ContainsKey(symbol))
+			{
+				this.Bindings.Remove(symbol);
+			}
+
+			this.Bindings.Add(symbol, item);
+		}
+
+		public Item Lookup(string symbol)
+		{
+			if (this.Bindings.ContainsKey(symbol))
+			{
+				return this.Bindings[symbol];
+			}
+			else
+			{
+				if (this.Parent != null)
+				{
+					return this.Parent.Lookup(symbol);
+				}
+				else
+				{
+					throw new Exception("Symbol not defined.");
+				}
+			}
+		}
+	}
+
 	public class Class1
 	{
 		private Dictionary<string, Invokeable> builtins = new Dictionary<string, Invokeable>();
@@ -123,16 +163,20 @@ namespace EnnuiScript
 				new ValueItem(ItemType.Number, 1.0),
 				new ValueItem(ItemType.Number, 1.0));*/
 
+			var space = new SymbolSpace();
+			space.Bind("+", this.builtins["+"]);
+			space.Bind("=>", this.builtins["=>"]);
+
 			exp.Add(
-				new SymbolItem(this.builtins["+"]),
+				new SymbolItem("+"),
 				new ListItem(
-					this.builtins["+"],
+					new SymbolItem("+"),
 					new ValueItem(ItemType.Number, 1.0),
 					new ValueItem(ItemType.Number, 1.0)),
 				new ValueItem(ItemType.Number, 1.0));
 
 			var exp2 = new ListItem(
-				new SymbolItem(this.builtins["=>"]),
+				new SymbolItem("=>"),
 				new SymbolItem(null).Quote(),
 				new TypeItem(ItemType.Number),
 				new ListItem(
@@ -141,9 +185,9 @@ namespace EnnuiScript
 				new ListItem().Quote()
 			);
 
-			var result2 = exp2.Evaluate();
+			var result2 = exp2.Evaluate(space);
 
-			var result = exp.Evaluate();
+			var result = exp.Evaluate(space);
 			var a = 0;
 		}
 	}
@@ -287,7 +331,7 @@ namespace EnnuiScript
 	public abstract class EvaluateableItem : Item
 	{
 		protected bool isQuoted;
-		public abstract Item Evaluate();
+		public abstract Item Evaluate(SymbolSpace space);
 
 		protected EvaluateableItem(ItemType type) : base(type)
 		{
@@ -302,16 +346,16 @@ namespace EnnuiScript
 
 	public class SymbolItem : EvaluateableItem
 	{
-		private Item reference;
+		private string name;
 
-		public SymbolItem(Item reference) : base(ItemType.Symbol)
+		public SymbolItem(string name) : base(ItemType.Symbol)
 		{
-			this.reference = reference;
+			this.name = name;
 		}
 
-		public Item Flatten()
+		public Item Flatten(SymbolSpace space)
 		{
-			var current = this.reference;
+			var current = space.Lookup(this.name);
 
 			while (current.ItemType == ItemType.Symbol)
 			{
@@ -322,13 +366,13 @@ namespace EnnuiScript
 					break;
 				}
 
-				current = symbol.Evaluate();
+				current = symbol.Evaluate(space);
 			}
 
 			return current;
 		}
 
-		public override Item Evaluate()
+		public override Item Evaluate(SymbolSpace space)
 		{
 			if (this.isQuoted)
 			{
@@ -336,7 +380,7 @@ namespace EnnuiScript
 				return this;
 			}
 
-			return this.Flatten();
+			return this.Flatten(space);
 		}
 	}
 
@@ -366,7 +410,7 @@ namespace EnnuiScript
 			return this;
 		}
 
-		private List<Item> Flatten()
+		private List<Item> Flatten(SymbolSpace space)
 		{
 			var resultExp = new List<Item>();
 
@@ -374,14 +418,14 @@ namespace EnnuiScript
 			{
 				resultExp.Add(
 					item is EvaluateableItem
-						? (item as EvaluateableItem).Evaluate()
+						? (item as EvaluateableItem).Evaluate(space)
 						: item);
 			}
 
 			return resultExp;
 		}
 
-		public override Item Evaluate()
+		public override Item Evaluate(SymbolSpace space)
 		{
 			if (this.isQuoted)
 			{
@@ -389,7 +433,7 @@ namespace EnnuiScript
 				return this;
 			}
 
-			var exp = this.Flatten();
+			var exp = this.Flatten(space);
 
 			var head = exp.First() as Invokeable;
 			var tail = exp.Skip(1).ToList();
