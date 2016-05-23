@@ -4,20 +4,100 @@ using System.Linq;
 
 namespace EnnuiScript
 {
+	public static class Extensions
+	{
+		public static List<U> GroupingSelect<T, U>(this List<T> source, int groupSize, Func<List<T>, U> selector)
+		{
+			if (source.Count() % groupSize != 0)
+			{
+				throw new Exception();
+			}
+
+			var current = new List<U>();
+
+			for (var i = 0; i < source.Count(); i += groupSize)
+			{
+				var group = source.Skip(i).Take(groupSize).ToList();
+				current.Add(selector(group));
+			}
+			
+			return current;
+		}
+	}
+
 	public class Class1
 	{
+		private Dictionary<string, Invokeable> builtins = new Dictionary<string, Invokeable>();
+
 		private bool TypeMatch(List<Item> items, params ItemType[] types)
 		{
 			return false;
 		}
 
-		public void Main()
+		private void SetupDefn()
+		{
+			var fn = new Invokeable
+			{
+				ReturnType = ItemType.Invokeable,
+
+				Demands = Invokeable.MakeDemands(
+					Invokeable.DemandTypes(
+						ItemType.Symbol,
+						ItemType.Type,
+						ItemType.List,
+						ItemType.List),
+
+					args => (args[2] as ListItem).expression.Count % 2 == 0,
+
+					args => {
+						var argumentList = (args[2] as ListItem).expression;
+						return argumentList
+							.GroupingSelect(2, xs => new Tuple<Item, Item>(xs[0], xs[1]))
+							.All(pair =>
+								pair.Item1.ItemType == ItemType.Symbol &&
+								pair.Item2.ItemType == ItemType.Type);
+					}
+				),
+				Function = args => {
+					var symbol = args[0] as SymbolItem;
+					var returnType = args[1] as TypeItem;
+					var argumentList = (args[2] as ListItem).expression
+						.GroupingSelect(2, xs => new Tuple<Item, Item>(xs[0], xs[1]));
+					var body = args[3] as ListItem;
+
+					var argumentTypes = 
+						argumentList
+							.Select(argument => (argument.Item2 as TypeItem).Type)
+							.ToArray();
+
+					var resultingInvokeable = new Invokeable()
+					{
+						ReturnType = returnType.Type,
+
+						Demands = Invokeable.MakeDemands(Invokeable.DemandTypes(argumentTypes)),
+						
+						// create symbol space,
+						// bind fnargs,
+						// evaluate body
+						// pop symbolspace
+						Function = fnargs => null
+					};
+
+					return resultingInvokeable;
+				}
+			};
+
+			this.builtins.Add("=>", fn);
+		}
+
+		private void SetupAdd()
 		{
 			var add = new Invokeable
 			{
-				//Demand = args => args.All(arg => arg.ItemType == ItemType.Number),
+				ReturnType = ItemType.Number,
+
 				Demands = Invokeable.MakeDemands(
-					Invokeable.DemandTypeMany(arg => arg.ItemType == ItemType.Number)
+					args => args.All(arg => arg.ItemType == ItemType.Number)
 				),
 
 				Function = args => new ValueItem(
@@ -28,23 +108,13 @@ namespace EnnuiScript
 						.Sum())
 			};
 
-			var fn = new Invokeable
-			{
-				Demands = Invokeable.MakeDemands(
-					Invokeable.DemandType(arg => arg.ItemType == ItemType.Symbol), // name
-					Invokeable.DemandType(arg => arg.ItemType == ItemType.Type), // return type
-					Invokeable.DemandType(arg => arg.ItemType == ItemType.List), // arguments
-					Invokeable.DemandType(arg => arg.ItemType == ItemType.List) // body
-				),
-				Function = args => {
-					var symbol = args[0] as SymbolItem;
-					var returnType = args[1] as TypeItem;
-					var arguments = args[2] as ListItem;
-					var body = args[3] as ListItem;
+			this.builtins.Add("+", add);
+		}
 
-					return null;
-				}
-			};
+		public void Main()
+		{
+			this.SetupAdd();
+			this.SetupDefn();
 
 			var exp = new ListItem();
 
@@ -54,12 +124,24 @@ namespace EnnuiScript
 				new ValueItem(ItemType.Number, 1.0));*/
 
 			exp.Add(
-				new SymbolItem(add),
+				new SymbolItem(this.builtins["+"]),
 				new ListItem(
-					add,
+					this.builtins["+"],
 					new ValueItem(ItemType.Number, 1.0),
 					new ValueItem(ItemType.Number, 1.0)),
 				new ValueItem(ItemType.Number, 1.0));
+
+			var exp2 = new ListItem(
+				new SymbolItem(this.builtins["=>"]),
+				new SymbolItem(null).Quote(),
+				new TypeItem(ItemType.Number),
+				new ListItem(
+					new SymbolItem(null),
+					new TypeItem(ItemType.Number)).Quote(),
+				new ListItem().Quote()
+			);
+
+			var result2 = exp2.Evaluate();
 
 			var result = exp.Evaluate();
 			var a = 0;
@@ -90,9 +172,9 @@ namespace EnnuiScript
 
 	public class Invokeable : Item // function
 	{
-		public static List<Func<List<Item>, DemandResult>> MakeDemands(params Func<List<Item>, DemandResult>[] inDemands)
+		public static List<Func<List<Item>, bool>> MakeDemands(params Func<List<Item>, bool>[] inDemands)
 		{
-			var demands = new List<Func<List<Item>, DemandResult>>();
+			var demands = new List<Func<List<Item>, bool>>();
 
 			foreach (var demand in inDemands)
 			{
@@ -102,68 +184,39 @@ namespace EnnuiScript
 			return demands;
 		}
 
-		public static Func<List<Item>, DemandResult> DemandType(Func<Item, bool> condition)
+		public static Func<List<Item>, bool> DemandType(int index, ItemType type)
 		{
-			return args =>
-				new DemandResult
-				{
-					success = condition(args.First()),
-					items = args.Skip(1).ToList()
-				};
+			return args => args[index].ItemType == type;
 		}
 
-		public static Func<List<Item>, DemandResult> DemandTypeMany(Func<Item, bool> condition, int count = -1)
+		public static Func<List<Item>, bool> DemandTypes(params ItemType[] types)
 		{
-			return args => {
-				var argCount = count == -1 ? args.Count : count;
-
-				return new DemandResult
-				{
-					success = args.Take(argCount).All(condition),
-					items = args.Skip(argCount).ToList()
-				};
-			};
+			return DemandTypes(0, types);
 		}
 
-		public struct DemandResult
+		public static Func<List<Item>, bool> DemandTypes(int startIndex, params ItemType[] types)
 		{
-			public bool success;
-			public List<Item> items;
-
-			public DemandResult(bool success, List<Item> items)
-			{
-				this.success = success;
-				this.items = items;
-			}
+			return args => Enumerable.Range(startIndex, types.Length)
+				.All(index => args[index].ItemType == types[index]);
 		}
 
-		public Func<List<Item>, bool> Demand;
-		public List<Func<List<Item>, DemandResult>> Demands;
+		public List<Func<List<Item>, bool>> Demands;
 		public Func<List<Item>, Item> Function;
+		public ItemType ReturnType;
 
 		public Invokeable() : base(ItemType.Invokeable)
 		{
 		}
 
-		private bool EvaluateDemands(List<Item> inputArgs)
+		private bool EvaluateDemands(List<Item> args)
 		{
-			var args = new List<Item>(inputArgs);
-
-			foreach (var demand in this.Demands)
+			for (int index = 0; index < this.Demands.Count; index++)
 			{
-				var result = demand(args);
-
-				if (!result.success)
+				var demand = this.Demands[index];
+				if (!demand(args))
 				{
 					throw new Exception("Failed demands.");
 				}
-
-				args = result.items;
-			}
-
-			if (args.Count != 0)
-			{
-				throw new Exception("Failed demands (too many arguments).");
 			}
 
 			return true;
@@ -171,13 +224,19 @@ namespace EnnuiScript
 
 		public Item Invoke(List<Item> items)
 		{
-			// if (!this.Demand(items))
 			if (!this.EvaluateDemands(items))
 			{
 				throw new Exception("Failed demands.");
 			}
 
-			return this.Function(items);
+			var result = this.Function(items);
+
+			if (result.ItemType != this.ReturnType)
+			{
+				throw new Exception("Function returned improper type.");
+			}
+
+			return result;
 		}
 	}
 
@@ -234,9 +293,10 @@ namespace EnnuiScript
 		{
 		}
 
-		public void Quote()
+		public Item Quote()
 		{
 			this.isQuoted = true;
+			return this;
 		}
 	}
 
