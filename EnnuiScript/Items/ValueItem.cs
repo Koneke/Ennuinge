@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace EnnuiScript
+﻿namespace EnnuiScript.Items
 {
+	using System;
+
 	public class ValueItem : Item
 	{
 		private static object CastedValue(ItemType type, object value)

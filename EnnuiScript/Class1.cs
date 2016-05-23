@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace EnnuiScript
+﻿namespace EnnuiScript
 {
+	using System;
+	using System.Linq;
+	using Items;
+
 	public class Class1
 	{
 		private Parser parser;
@@ -61,7 +61,7 @@ namespace EnnuiScript
 							for (var index = 0; index < fnargs.Count; index++)
 							{
 								newSpace.Bind(
-									(argumentList[index].Item1 as SymbolItem).name,
+									(argumentList[index].Item1 as SymbolItem).Name,
 									fnargs[index]);
 							}
 
@@ -70,7 +70,7 @@ namespace EnnuiScript
 						}
 					};
 
-					space.Bind(symbol.name, resultingInvokeable);
+					space.Bind(symbol.Name, resultingInvokeable);
 
 					return resultingInvokeable;
 				}
@@ -102,7 +102,7 @@ namespace EnnuiScript
 
 		private Item ParseAndEvaluate(string instring)
 		{
-			return parser.Parse(instring).Evaluate(this.globalSpace);
+			return this.parser.Parse(instring).Evaluate(this.globalSpace);
 		}
 
 		public void Main()

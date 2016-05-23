@@ -1,4 +1,4 @@
-﻿namespace EnnuiScript
+﻿namespace EnnuiScript.Items
 {
 	public enum ItemType
 	{

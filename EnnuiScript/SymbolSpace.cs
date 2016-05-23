@@ -1,8 +1,9 @@
-using System;
-using System.Collections.Generic;
-
 namespace EnnuiScript
 {
+	using System;
+	using System.Collections.Generic;
+	using Items;
+
 	public class SymbolSpace
 	{
 		private Dictionary<string, Item> Bindings;

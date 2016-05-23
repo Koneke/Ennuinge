@@ -1,4 +1,4 @@
-namespace EnnuiScript
+namespace EnnuiScript.Items
 {
 	public class TypeItem : Item
 	{

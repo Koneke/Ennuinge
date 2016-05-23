@@ -1,7 +1,7 @@
-using System.Linq;
-
-namespace EnnuiScript
+namespace EnnuiScript.Items
 {
+	using System.Linq;
+
 	public class Item
 	{
 		public static bool IsValueType(ItemType type)

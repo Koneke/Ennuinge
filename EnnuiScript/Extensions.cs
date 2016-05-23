@@ -1,9 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace EnnuiScript
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+
 	public static class Extensions
 	{
 		public static List<TOut> GroupingSelect<TIn, TOut>(this List<TIn> source, int groupSize, Func<List<TIn>, TOut> selector)

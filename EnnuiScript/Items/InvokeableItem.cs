@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace EnnuiScript
+﻿namespace EnnuiScript.Items
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+
 	public class InvokeableItem : Item // function
 	{
 		public static List<Func<List<Item>, bool>> MakeDemands(params Func<List<Item>, bool>[] inDemands)

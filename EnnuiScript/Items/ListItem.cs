@@ -1,9 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace EnnuiScript
+namespace EnnuiScript.Items
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+
 	public class ListItem : EvaluateableItem
 	{
 		public readonly List<Item> Expression;
@@ -41,9 +41,9 @@ namespace EnnuiScript
 
 		public override Item Evaluate(SymbolSpace space)
 		{
-			if (this.isQuoted)
+			if (this.IsQuoted)
 			{
-				this.isQuoted = false;
+				this.IsQuoted = false;
 				return this;
 			}
 

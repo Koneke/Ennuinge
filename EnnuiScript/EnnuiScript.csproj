@@ -41,17 +41,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Class1.cs" />
-    <Compile Include="EvaluateableItem.cs" />
+    <Compile Include="Items\EvaluateableItem.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="InvokeableItem.cs" />
-    <Compile Include="Item.cs" />
-    <Compile Include="ListItem.cs" />
+    <Compile Include="Items\InvokeableItem.cs" />
+    <Compile Include="Items\Item.cs" />
+    <Compile Include="Items\ItemType.cs" />
+    <Compile Include="Items\ListItem.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SymbolItem.cs" />
+    <Compile Include="Items\SymbolItem.cs" />
     <Compile Include="SymbolSpace.cs" />
-    <Compile Include="TypeItem.cs" />
-    <Compile Include="ValueItem.cs" />
+    <Compile Include="Items\TypeItem.cs" />
+    <Compile Include="Items\ValueItem.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

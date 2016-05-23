@@ -1,23 +1,23 @@
-﻿namespace EnnuiScript
+﻿namespace EnnuiScript.Items
 {
 	public class SymbolItem : EvaluateableItem
 	{
-		public string name;
+		public string Name;
 
 		public SymbolItem(string name) : base(ItemType.Symbol)
 		{
-			this.name = name;
+			this.Name = name;
 		}
 
 		public Item Flatten(SymbolSpace space)
 		{
-			var current = space.Lookup(this.name);
+			var current = space.Lookup(this.Name);
 
 			while (current.ItemType == ItemType.Symbol)
 			{
-				var symbol = current as SymbolItem;
+				var symbol = (SymbolItem)current;
 
-				if (symbol.isQuoted)
+				if (symbol.IsQuoted)
 				{
 					break;
 				}
@@ -30,9 +30,9 @@
 
 		public override Item Evaluate(SymbolSpace space)
 		{
-			if (this.isQuoted)
+			if (this.IsQuoted)
 			{
-				this.isQuoted = false;
+				this.IsQuoted = false;
 				return this;
 			}
 
