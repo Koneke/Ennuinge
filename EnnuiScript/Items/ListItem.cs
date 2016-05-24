@@ -32,9 +32,8 @@ namespace EnnuiScript.Items
 
 		private List<Item> Flatten(SymbolSpace space)
 		{
-			//var output = new List<Item>();
-
 			var current = new List<Item>(this.Expression);
+			List<Item> output;
 
 			Func<List<Item>, bool> anyNonquoted = l => l
 				.Select(item => item as EvaluateableItem)
@@ -42,19 +41,13 @@ namespace EnnuiScript.Items
 				.Count(item => !item.IsQuoted) > 0;
 
 			// Evaluate all non-quoted while there are still non-quoted.
-			// Then evaluate all quoted items *ONCE*.
-
 			while (anyNonquoted(current))
 			{
-				var output = new List<Item>();
+				output = new List<Item>();
 
 				foreach (var item in current)
 				{
 					Item evaluated;
-					/*var evaluated = 
-						item is EvaluateableItem
-							? ((EvaluateableItem) item).Evaluate(space)
-							: item;*/
 
 					if (item is EvaluateableItem)
 					{
@@ -74,8 +67,8 @@ namespace EnnuiScript.Items
 				current = output;
 			}
 
-			var otp = new List<Item>();
-
+			// Evaluate all quoted items *ONCE*.
+			output = new List<Item>();
 			foreach (var item in current)
 			{
 				Item evaluated;
@@ -92,31 +85,10 @@ namespace EnnuiScript.Items
 					evaluated = item;
 				}
 
-				otp.Add(evaluated);
-			}
-
-			current = otp;
-
-			return current;
-
-			/*foreach (var item in this.Expression)
-			{
-				var evaluated = 
-					item is EvaluateableItem
-						? ((EvaluateableItem) item).Evaluate(space)
-						: item;
-
 				output.Add(evaluated);
 			}
 
-			return output;*/
-
-			return this.Expression
-				.Select(item =>
-				item is EvaluateableItem
-					? ((EvaluateableItem) item).Evaluate(space)
-					: item)
-				.ToList();
+			return output;
 		}
 
 		public override Item Evaluate(SymbolSpace space)

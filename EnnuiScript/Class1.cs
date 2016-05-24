@@ -215,9 +215,6 @@
 			this.SetupAdd();
 			this.SetupDefn();
 
-			//this.ParseAndEvaluate("(=> 'double :Number '(test :Number) '(+ test test))");
-			//var result = this.ParseAndEvaluate("(double 10)");
-
 			while (true)
 			{
 				var input = Console.ReadLine();
@@ -231,8 +228,6 @@
 				Console.WriteLine(result);
 				Console.WriteLine();
 			}
-
-			var a = 0;
 		}
 	}
 }

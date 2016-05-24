@@ -1,6 +1,7 @@
 ﻿namespace EnnuiScript
 {
 	using System;
+	using System.Linq;
 	using System.Collections.Generic;
 	using Items;
 
@@ -12,9 +13,30 @@
 			{
 				case LeftParen: return RightParen;
 				case LeftBracket: return RightBracket;
-				case Quote: return Quote;
+				case DoubleQuote: return DoubleQuote;
 				default: throw new ArgumentException();
 			}
+		}
+
+		public static bool IsEscaped(int index, string instring)
+		{
+			return index > 0 && instring[index - 1] == '\\';
+		}
+
+		public static bool InString(int index, string instring)
+		{
+			if (index == 0)
+			{
+				return false;
+			}
+
+			var atIndex = instring[index];
+			var isQuote = atIndex == '"' && !IsEscaped(index, instring);
+
+			return instring
+				.Substring(0, index)
+				.Replace("\\\"", "")
+				.Count(c => c == '"') % 2 == 1 && !isQuote;
 		}
 
 		public int FindPairIndex(string instring, int startIndex, char c)
@@ -24,7 +46,7 @@
 
 			for (var i = startIndex + 1; i < instring.Length; i++)
 			{
-				var isEscaped = i > 0 && instring[i - 1] == '\\';
+				var isEscaped = IsEscaped(i, instring);
 
 				var at = instring[i];
 				if (at == pairChar && !isEscaped)
@@ -42,35 +64,6 @@
 			}
 
 			throw new ArgumentException();
-		}
-
-		public List<string> RespectingSplit(string instring)
-		{
-			var results = new List<string>();
-			var current = instring;
-			var parens = new List<char>() { '(', '[' };
-
-			var last = 0;
-			var list = false;
-			for (var i = 0; i < instring.Length; i++)
-			{
-				var c = instring[i];
-				if (c == Space)
-				{
-					var cap = instring.Substring(last, i - last);
-					results.Add((list?"list: ":"") + cap);
-					last = i + 1;
-					list = false;
-				}
-				else if (parens.Contains(c))
-				{
-					i = this.FindPairIndex(instring, i, c);
-					list = true;
-				}
-			}
-			results.Add(instring.Substring(last));
-			var a = 0;
-			return results;
 		}
 
 		public Item ParseValue(string instring)
@@ -119,7 +112,8 @@
 		private const char RightParen = ')';
 		private const char LeftBracket = '[';
 		private const char RightBracket = '[';
-		private const char Quote = '"';
+		private const char DoubleQuote = '"';
+		private const char SingleQuote = '\'';
 		private const char Space = ' ';
 
 		public ListItem Parse(string instring)
@@ -128,27 +122,27 @@
 
 			// get quote
 			var quote = false;
-			if (current[0] == '\'')
+			if (current[0] == SingleQuote)
 			{
 				quote = true;
 				current = current.Substring(1);
 			}
 
 			// strip parens
-			if (current[0] == '(')
+			if (current[0] == LeftParen)
 			{
 				current = current.Substring(1, current.Length - 2);
 			}
 
 			var results = new List<Item>();
-			var parens = new List<char>() { Quote, LeftParen, LeftBracket };
+			var parens = new List<char>() { DoubleQuote, LeftParen, LeftBracket };
 
 			var last = 0;
 			var list = false;
 			for (var i = 0; i < current.Length; i++)
 			{
 				var c = current[i];
-				if (c == ' ')
+				if (c == Space)
 				{
 					var cap = current.Substring(last, i - last);
 
@@ -162,7 +156,7 @@
 				else if (parens.Contains(c))
 				{
 					i = this.FindPairIndex(current, i, c);
-					list = c != Quote;
+					list = c != DoubleQuote;
 				}
 			}
 

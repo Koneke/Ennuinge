@@ -1,6 +1,5 @@
 ﻿namespace EnnuiScript.Items
 {
-	using System.Text;
 	using System.Collections.Generic;
 
 	public class SymbolItem : EvaluateableItem
