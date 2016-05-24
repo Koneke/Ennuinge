@@ -18,6 +18,11 @@
 			return demands;
 		}
 
+		public static Func<List<Item>, bool> DemandOfAnyType(int index, params ItemType[] types)
+		{
+			return args => types.Contains(args[index].ItemType);
+		}
+
 		public static Func<List<Item>, bool> DemandType(int index, ItemType type)
 		{
 			return args => args[index].ItemType == type;
@@ -70,6 +75,11 @@
 			}
 
 			return result;
+		}
+
+		public override string ToString()
+		{
+			return "invokeable";
 		}
 	}
 }

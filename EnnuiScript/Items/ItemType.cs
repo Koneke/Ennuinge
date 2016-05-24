@@ -8,6 +8,7 @@
 		String,
 
 		Symbol,
+		SymbolSpace,
 		List,
 		Invokeable
 	}

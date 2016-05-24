@@ -32,8 +32,88 @@ namespace EnnuiScript.Items
 
 		private List<Item> Flatten(SymbolSpace space)
 		{
+			//var output = new List<Item>();
+
+			var current = new List<Item>(this.Expression);
+
+			Func<List<Item>, bool> anyNonquoted = l => l
+				.Select(item => item as EvaluateableItem)
+				.Where(item => item != null)
+				.Count(item => !item.IsQuoted) > 0;
+
+			// Evaluate all non-quoted while there are still non-quoted.
+			// Then evaluate all quoted items *ONCE*.
+
+			while (anyNonquoted(current))
+			{
+				var output = new List<Item>();
+
+				foreach (var item in current)
+				{
+					Item evaluated;
+					/*var evaluated = 
+						item is EvaluateableItem
+							? ((EvaluateableItem) item).Evaluate(space)
+							: item;*/
+
+					if (item is EvaluateableItem)
+					{
+						var evaluateable = item as EvaluateableItem;
+						evaluated = evaluateable.IsQuoted
+							? evaluateable
+							: evaluateable.Evaluate(space);
+					}
+					else
+					{
+						evaluated = item;
+					}
+
+					output.Add(evaluated);
+				}
+
+				current = output;
+			}
+
+			var otp = new List<Item>();
+
+			foreach (var item in current)
+			{
+				Item evaluated;
+
+				if (item is EvaluateableItem)
+				{
+					var evaluateable = item as EvaluateableItem;
+					evaluated = evaluateable.IsQuoted
+						? evaluateable.Evaluate(space)
+						: evaluateable;
+				}
+				else
+				{
+					evaluated = item;
+				}
+
+				otp.Add(evaluated);
+			}
+
+			current = otp;
+
+			return current;
+
+			/*foreach (var item in this.Expression)
+			{
+				var evaluated = 
+					item is EvaluateableItem
+						? ((EvaluateableItem) item).Evaluate(space)
+						: item;
+
+				output.Add(evaluated);
+			}
+
+			return output;*/
+
 			return this.Expression
-				.Select(item => item is EvaluateableItem
+				.Select(item =>
+				item is EvaluateableItem
 					? ((EvaluateableItem) item).Evaluate(space)
 					: item)
 				.ToList();
@@ -57,7 +137,24 @@ namespace EnnuiScript.Items
 				throw new Exception();
 			}
 
-			return head.Invoke(space, tail);
+			var result = head.Invoke(space, tail);
+			return result;
+		}
+
+		public override string ToString()
+		{
+			var attributes = new List<string>();
+
+			if (this.IsQuoted)
+			{
+				attributes.Add("quoted");
+			}
+
+			attributes.Add("list");
+
+			var attributeString = string.Join(" ", attributes);
+
+			return $"{attributeString} ({string.Join(", ", this.Expression)})";
 		}
 	}
 }

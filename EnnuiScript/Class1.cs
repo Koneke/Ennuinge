@@ -9,6 +9,102 @@
 		private Parser parser;
 		private SymbolSpace globalSpace;
 
+		private void SetupUnquote()
+		{
+			var fn = new InvokeableItem
+			{
+				ReturnType = ItemType.Symbol,
+
+				Demands = InvokeableItem.MakeDemands(InvokeableItem.DemandOfAnyType(0, ItemType.List, ItemType.Symbol)),
+
+				Function = (space, args) =>
+				{
+					var symbol = args[0] as EvaluateableItem;
+					return symbol.Unquote();
+				}
+			};
+
+			this.globalSpace.Bind(",", fn);
+			this.globalSpace.Bind("unquote", fn);
+		}
+
+		private void SetupMakeSpace()
+		{
+			var fn = new InvokeableItem()
+			{
+				ReturnType = ItemType.SymbolSpace,
+
+				Demands = InvokeableItem.MakeDemands(
+					InvokeableItem.DemandType(0, ItemType.List),
+					args => (args[0] as ListItem).Expression.HasEvenLength(),
+					args => (args[0] as ListItem).Expression
+						.GroupingSelect(2)
+						.All(pair => pair[0].ItemType == ItemType.Symbol)),
+
+				Function = (space, args) =>
+				{
+					var newSpace = new SymbolSpace();
+					var symbolValuePairs = (args[0] as ListItem).Expression.GroupingSelect(2);
+
+					foreach (var pair in symbolValuePairs)
+					{
+						var symbol = pair[0] as SymbolItem;
+						newSpace.Bind(symbol.Name, pair[1]);
+					}
+
+					return new SymbolSpaceItem(newSpace);
+				}
+			};
+
+			this.globalSpace.Bind("make-space", fn);
+		}
+
+		private void SetupDef()
+		{
+			var fn = new InvokeableItem
+			{
+				ReturnType = ItemType.Symbol,
+
+				Demands = InvokeableItem.MakeDemands(InvokeableItem.DemandType(0, ItemType.Symbol)),
+
+				Function = (space, args) =>
+				{
+					var symbol = args[0] as SymbolItem;
+					var value = args[1];
+					var bindingSpace = symbol.BoundSpace ?? space;
+
+					bindingSpace.Bind(symbol.Name, value);
+
+					return symbol;
+				}
+			};
+
+			this.globalSpace.Bind("def", fn);
+		}
+
+		private void SetupGet()
+		{
+			var fn = new InvokeableItem
+			{
+				ReturnType = ItemType.Symbol,
+
+				Demands = InvokeableItem.MakeDemands(
+					InvokeableItem.DemandTypes(
+						ItemType.SymbolSpace,
+						ItemType.Symbol)),
+
+				Function = (space, args) =>
+				{
+					var sourceSpace = args[0] as SymbolSpaceItem;
+					var symbol = args[1] as SymbolItem;
+
+					return new SymbolItem(symbol.Name, sourceSpace.Space).Quote();
+				}
+			};
+
+			this.globalSpace.Bind("get", fn);
+		}
+
 		private void SetupDefn()
 		{
 			var fn = new InvokeableItem
@@ -24,7 +120,8 @@
 
 					args => (args[2] as ListItem).Expression.Count % 2 == 0,
 
-					args => {
+					args =>
+					{
 						var argumentList = (args[2] as ListItem).Expression;
 						return argumentList
 							.GroupingSelect(2, xs => new Tuple<Item, Item>(xs[0], xs[1]))
@@ -111,11 +208,29 @@
 			this.globalSpace = new SymbolSpace();
 
 			// setup builtins
+			this.SetupUnquote();
+			this.SetupMakeSpace();
+			this.SetupDef();
+			this.SetupGet();
 			this.SetupAdd();
 			this.SetupDefn();
 
-			this.ParseAndEvaluate("(=> 'double :Number '(test :Number) '(+ test test))");
-			var result = this.ParseAndEvaluate("(double 10)");
+			//this.ParseAndEvaluate("(=> 'double :Number '(test :Number) '(+ test test))");
+			//var result = this.ParseAndEvaluate("(double 10)");
+
+			while (true)
+			{
+				var input = Console.ReadLine();
+
+				if (input == "quit" || input == "q")
+				{
+					break;
+				}
+
+				var result = this.ParseAndEvaluate(input);
+				Console.WriteLine(result);
+				Console.WriteLine();
+			}
 
 			var a = 0;
 		}
