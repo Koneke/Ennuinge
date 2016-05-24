@@ -9,6 +9,46 @@
 		private Parser parser;
 		private SymbolSpace globalSpace;
 
+		private void SetupNegate()
+		{
+			var fn = new InvokeableItem
+			{
+				ReturnType = ItemType.Number,
+
+				Demands = InvokeableItem.MakeDemands(
+					args => args.Count == 1,
+					InvokeableItem.DemandType(0, ItemType.Number)),
+
+				Function = (space, args) =>
+				{
+					var item = args[0] as ValueItem;
+
+					return new ValueItem(ItemType.Number, -(double)item.Value);
+				}
+			};
+
+			this.globalSpace.Bind("_", fn);
+		}
+
+		private void SetupQuote()
+		{
+			var fn = new InvokeableItem
+			{
+				ReturnType = ItemType.Symbol,
+
+				Demands = InvokeableItem.MakeDemands(InvokeableItem.DemandOfAnyType(0, ItemType.List, ItemType.Symbol)),
+
+				Function = (space, args) =>
+				{
+					var symbol = args[0] as EvaluateableItem;
+					return symbol.Quote();
+				}
+			};
+
+			this.globalSpace.Bind("`", fn);
+			this.globalSpace.Bind("quote", fn);
+		}
+
 		private void SetupUnquote()
 		{
 			var fn = new InvokeableItem
@@ -208,6 +248,8 @@
 			this.globalSpace = new SymbolSpace();
 
 			// setup builtins
+			this.SetupNegate();
+			this.SetupQuote();
 			this.SetupUnquote();
 			this.SetupMakeSpace();
 			this.SetupDef();
@@ -215,17 +257,60 @@
 			this.SetupAdd();
 			this.SetupDefn();
 
+			var strict = false;
+			string accumulator = "";
+
 			while (true)
 			{
 				var input = Console.ReadLine();
 
-				if (input == "quit" || input == "q")
+				if (string.IsNullOrEmpty(input))
+				{
+					continue;
+				}
+
+				if (input.Last() == '\\')
+				{
+					accumulator += input.Substring(0, input.Length - 1) + " ";
+					continue;
+				}
+				else
+				{
+					accumulator += input;
+				}
+
+				if (accumulator == "toggle-strict")
+				{
+					strict = !strict;
+					Console.WriteLine($"Strict is now {strict}");
+					Console.WriteLine();
+					accumulator = "";
+					continue;
+				}
+
+				if (accumulator == "quit" || accumulator == "q")
 				{
 					break;
 				}
 
-				var result = this.ParseAndEvaluate(input);
-				Console.WriteLine(result);
+				try
+				{
+					if (string.IsNullOrEmpty(accumulator))
+					{
+						Console.WriteLine();
+						continue;
+					}
+
+					var result = this.ParseAndEvaluate(accumulator);
+					Console.WriteLine(result);
+				}
+				catch (Exception e) when (!strict)
+				{
+					Console.WriteLine(e.Message);
+				}
+
+				accumulator = "";
+
 				Console.WriteLine();
 			}
 		}

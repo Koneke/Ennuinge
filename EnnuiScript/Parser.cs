@@ -116,9 +116,32 @@
 		private const char SingleQuote = '\'';
 		private const char Space = ' ';
 
+		private static string SpaceExpression(string instring)
+		{
+			var current = instring;
+			var preSpacers = new [] { LeftParen, LeftBracket, SingleQuote };
+
+			for (var i = 0; i < current.Length; i++)
+			{
+				var at = current[i];
+
+				if (i > 0 && preSpacers.Contains(at) && !InString(i, current) && !IsEscaped(i, current))
+				{
+					if (current[i - 1] != ' ' && current[i - 1] != '\'')
+					{
+						current = current.Insert(i, " ");
+						i+=1;
+					}
+				}
+			}
+
+			return current;
+		}
+
 		public ListItem Parse(string instring)
 		{
 			var current = instring;
+			current = SpaceExpression(current);
 
 			// get quote
 			var quote = false;
@@ -135,7 +158,7 @@
 			}
 
 			var results = new List<Item>();
-			var parens = new List<char>() { DoubleQuote, LeftParen, LeftBracket };
+			var parens = new List<char> { DoubleQuote, LeftParen, LeftBracket };
 
 			var last = 0;
 			var list = false;
@@ -145,6 +168,12 @@
 				if (c == Space)
 				{
 					var cap = current.Substring(last, i - last);
+
+					if (string.IsNullOrEmpty(cap))
+					{
+						last = i + 1;
+						continue;
+					}
 
 					results.Add(list
 						? this.Parse(cap)
