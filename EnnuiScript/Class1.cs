@@ -33,11 +33,20 @@
 			this.globalSpace.Bind("bind", fn);
 		}
 
+		private Item Deref(SymbolSpace space, SymbolItem symbol)
+		{
+			var reference = space.Lookup(symbol.Name);
+
+			return reference is EvaluateableItem
+				? (reference as EvaluateableItem).Quote()
+				: reference;
+		}
+
 		private void SetupDeref()
 		{
 			var fn = new InvokeableItem
 			{
-				ReturnType = ItemType.Symbol,
+				ReturnType = ItemType.Any,
 
 				Demands = InvokeableItem.MakeDemands(
 					InvokeableItem.DemandType(0, ItemType.Symbol),
@@ -49,12 +58,9 @@
 
 					var reference = space.Lookup(symbol.Name);
 
-					if (reference.ItemType != ItemType.Symbol)
-					{
-						throw new ArgumentException();
-					}
-
-					return (reference as SymbolItem).Quote();
+					return reference is EvaluateableItem
+						? (reference as EvaluateableItem).Quote()
+						: reference;
 				}
 			};
 
@@ -77,7 +83,11 @@
 				{
 					var evaluateable = args[0] as EvaluateableItem;
 
-					return evaluateable.Evaluate(space);
+					var item = evaluateable is SymbolItem
+						? (EvaluateableItem)(this.Deref(space, evaluateable as SymbolItem) as EvaluateableItem).Unquote()
+						: evaluateable;
+
+					return item.Evaluate(space);
 				}
 			};
 

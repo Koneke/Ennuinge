@@ -98,6 +98,11 @@
 				quote = true;
 			}
 
+			if (char.IsDigit(current.First()))
+			{
+				throw new FormatException();
+			}
+
 			var symbol = new SymbolItem(current);
 
 			if (quote)
