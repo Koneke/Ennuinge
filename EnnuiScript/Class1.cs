@@ -9,6 +9,131 @@
 		private Parser parser;
 		private SymbolSpace globalSpace;
 
+		private void SetupBind()
+		{
+			var fn = new InvokeableItem
+			{
+				ReturnType = ItemType.Symbol,
+
+				Demands = InvokeableItem.MakeDemands(
+					InvokeableItem.DemandTypes(ItemType.Symbol, ItemType.Space),
+					args => args.Count == 2),
+
+				Function = (space, args) =>
+				{
+					var symbol = args[0] as SymbolItem;
+					var symbolSpace = args[1] as SymbolSpaceItem;
+
+					symbol.BoundSpace = symbolSpace.Space;
+
+					return symbol.Quote();
+				}
+			};
+
+			this.globalSpace.Bind("bind", fn);
+		}
+
+		private void SetupDeref()
+		{
+			var fn = new InvokeableItem
+			{
+				ReturnType = ItemType.Symbol,
+
+				Demands = InvokeableItem.MakeDemands(
+					InvokeableItem.DemandType(0, ItemType.Symbol),
+					args => args.Count == 1),
+
+				Function = (space, args) =>
+				{
+					var symbol = args[0] as SymbolItem;
+
+					var reference = space.Lookup(symbol.Name);
+
+					if (reference.ItemType != ItemType.Symbol)
+					{
+						throw new ArgumentException();
+					}
+
+					return (reference as SymbolItem).Quote();
+				}
+			};
+
+			this.globalSpace.Bind("deref-symbol", fn);
+		}
+
+		private void SetupEvaluate()
+		{
+			var fn = new InvokeableItem
+			{
+				ReturnType = ItemType.Any,
+
+				Demands = InvokeableItem.MakeDemands(
+					InvokeableItem.DemandOfAnyType(0,
+						ItemType.Symbol,
+						ItemType.List),
+					args => args.Count == 1),
+
+				Function = (space, args) =>
+				{
+					var evaluateable = args[0] as EvaluateableItem;
+
+					return evaluateable.Evaluate(space);
+				}
+			};
+
+			this.globalSpace.Bind(";", fn);
+		}
+
+		private void SetupIn()
+		{
+			var fn = new InvokeableItem
+			{
+				ReturnType = ItemType.Any,
+
+				Demands = InvokeableItem.MakeDemands(
+					InvokeableItem.DemandTypes(
+						ItemType.Space,
+						ItemType.List),
+					args => args.Count == 2),
+
+				Function = (space, args) =>
+				{
+					var symbolSpace = args[0] as SymbolSpaceItem;
+					var expression = args[1] as ListItem;
+
+					var spaceParent = symbolSpace.Space.GetParent();
+					symbolSpace.Space.SetParent(space);
+					space.SetParent(spaceParent);
+
+					var result = expression.Evaluate(symbolSpace.Space);
+
+					symbolSpace.Space.SetParent(spaceParent);
+
+					return result;
+				}
+			};
+
+			this.globalSpace.Bind("in", fn);
+		}
+
+		private void SetupPrint()
+		{
+			var fn = new InvokeableItem
+			{
+				ReturnType = ItemType.None,
+
+				Demands = InvokeableItem.MakeDemands(args => args.Count == 1),
+
+				Function = (space, args) =>
+				{
+					Console.WriteLine(args[0].Print());
+					return null;
+				}
+			};
+
+			this.globalSpace.Bind("print", fn);
+		}
+
 		private void SetupNegate()
 		{
 			var fn = new InvokeableItem
@@ -72,7 +197,7 @@
 		{
 			var fn = new InvokeableItem()
 			{
-				ReturnType = ItemType.SymbolSpace,
+				ReturnType = ItemType.Space,
 
 				Demands = InvokeableItem.MakeDemands(
 					InvokeableItem.DemandType(0, ItemType.List),
@@ -83,7 +208,7 @@
 
 				Function = (space, args) =>
 				{
-					var newSpace = new SymbolSpace();
+					var newSpace = new SymbolSpace(space);
 					var symbolValuePairs = (args[0] as ListItem).Expression.GroupingSelect(2);
 
 					foreach (var pair in symbolValuePairs)
@@ -130,7 +255,7 @@
 
 				Demands = InvokeableItem.MakeDemands(
 					InvokeableItem.DemandTypes(
-						ItemType.SymbolSpace,
+						ItemType.Space,
 						ItemType.Symbol)),
 
 				Function = (space, args) =>
@@ -138,7 +263,7 @@
 					var sourceSpace = args[0] as SymbolSpaceItem;
 					var symbol = args[1] as SymbolItem;
 
-					return new SymbolItem(symbol.Name, sourceSpace.Space).Quote();
+					return new SymbolItem(symbol.Name, sourceSpace.Space);
 				}
 			};
 
@@ -193,7 +318,7 @@
 						// bind fnargs,
 						// evaluate body with new symbol space
 						Function = (fnspace, fnargs) => {
-							var newSpace = new SymbolSpace {Parent = space};
+							var newSpace = new SymbolSpace(space);
 
 							for (var index = 0; index < fnargs.Count; index++)
 							{
@@ -245,9 +370,14 @@
 		public void Main()
 		{
 			this.parser = new Parser();
-			this.globalSpace = new SymbolSpace();
+			this.globalSpace = new SymbolSpace(null);
 
 			// setup builtins
+			this.SetupBind();
+			this.SetupDeref();
+			this.SetupEvaluate();
+			this.SetupIn();
+			this.SetupPrint();
 			this.SetupNegate();
 			this.SetupQuote();
 			this.SetupUnquote();
@@ -262,6 +392,11 @@
 
 			while (true)
 			{
+				var prompt = accumulator == ""
+					? ">>>"
+					: " > ";
+
+				Console.Write($"{prompt} ");
 				var input = Console.ReadLine();
 
 				if (string.IsNullOrEmpty(input))
@@ -302,7 +437,10 @@
 					}
 
 					var result = this.ParseAndEvaluate(accumulator);
-					Console.WriteLine(result);
+
+					var output = result?.ToString() ?? "None";
+
+					Console.WriteLine(": " + output);
 				}
 				catch (Exception e) when (!strict)
 				{

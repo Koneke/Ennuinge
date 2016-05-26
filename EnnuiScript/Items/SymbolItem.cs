@@ -1,5 +1,6 @@
 ﻿namespace EnnuiScript.Items
 {
+	using System.Linq;
 	using System.Collections.Generic;
 
 	public class SymbolItem : EvaluateableItem
@@ -67,6 +68,13 @@
 			var attributeString = string.Join(" ", attributes);
 
 			return $"{attributeString} {this.Name}";
+		}
+
+		public override string Print(int indent = 0)
+		{
+			return
+				string.Concat(Enumerable.Repeat("\t", indent)) +
+				(this.IsQuoted ? "'" : string.Empty) + this.Name;
 		}
 	}
 }

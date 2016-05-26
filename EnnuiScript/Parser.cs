@@ -85,7 +85,7 @@
 			// Type
 			if (instring[0] == ':')
 			{
-				var type = (ItemType)Enum.Parse(typeof(ItemType), instring.Substring(1));
+				var type = (ItemType)Enum.Parse(typeof(ItemType), instring.Substring(1), true);
 				return new TypeItem(type);
 			}
 
@@ -191,9 +191,12 @@
 
 			var final = current.Substring(last);
 
-			results.Add(list
-				? this.Parse(final)
-				: this.ParseValue(final));
+			if (!string.IsNullOrEmpty(final))
+			{
+				results.Add(list
+					? this.Parse(final)
+					: this.ParseValue(final));
+			}
 
 			var result = new ListItem(results.ToArray());
 

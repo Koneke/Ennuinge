@@ -6,12 +6,19 @@ namespace EnnuiScript
 
 	public class SymbolSpace
 	{
-		private Dictionary<string, Item> Bindings;
-		public SymbolSpace Parent;
+		public Dictionary<string, Item> Bindings;
+		private SymbolSpace Parent { get; set; }
 
-		public SymbolSpace()
+		public void SetParent(SymbolSpace space)
+		{
+			this.Parent = space;
+			this.Bind("super", new SymbolSpaceItem(space));
+		}
+
+		public SymbolSpace(SymbolSpace parent)
 		{
 			this.Bindings = new Dictionary<string, Item>();
+			this.SetParent(parent);
 		}
 
 		public void Bind(string symbol, Item item)
@@ -30,17 +37,30 @@ namespace EnnuiScript
 			{
 				return this.Bindings[symbol];
 			}
-			else
+
+			if (this.Parent != null)
 			{
-				if (this.Parent != null)
-				{
-					return this.Parent.Lookup(symbol);
-				}
-				else
-				{
-					throw new Exception("Symbol not defined.");
-				}
+				return this.Parent.Lookup(symbol);
 			}
+
+			throw new Exception($"Symbol not defined: {symbol}");
+		}
+
+		public SymbolSpace Clone()
+		{
+			var newSpace = new SymbolSpace(this.Parent);
+
+			foreach (var k in this.Bindings.Keys)
+			{
+				newSpace.Bind(k, this.Bindings[k]/*.Clone()*/);
+			}
+
+			return newSpace;
+		}
+
+		public SymbolSpace GetParent()
+		{
+			return this.Parent;
 		}
 	}
 }

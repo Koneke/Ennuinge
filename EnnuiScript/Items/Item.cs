@@ -2,7 +2,7 @@ namespace EnnuiScript.Items
 {
 	using System.Linq;
 
-	public class Item
+	public abstract class Item
 	{
 		public static bool IsValueType(ItemType type)
 		{
@@ -12,9 +12,11 @@ namespace EnnuiScript.Items
 
 		public ItemType ItemType { get; }
 
-		public Item(ItemType itemType)
+		protected Item(ItemType itemType)
 		{
 			this.ItemType = itemType;
 		}
+
+		public abstract string Print(int indent = 0);
 	}
 }

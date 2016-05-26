@@ -128,5 +128,15 @@ namespace EnnuiScript.Items
 
 			return $"{attributeString} ({string.Join(", ", this.Expression)})";
 		}
+
+		public override string Print(int indent = 0)
+		{
+			return
+				string.Concat(Enumerable.Repeat("\t", indent)) +
+				(this.IsQuoted ? "'" : string.Empty) +
+				"(" +
+				string.Join(" ", this.Expression.Select(item => item.Print())) +
+				")";
+		}
 	}
 }

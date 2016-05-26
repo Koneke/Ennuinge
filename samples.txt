@@ -1,0 +1,6 @@
+// set value in symbol space
+(def 's (make-space '(a 10)))
+(=> 'set :Any
+  '(sp :SymbolSpace sy :Symbol v :Any)
+  '(def (bind (deref-symbol 'sy) sp) v))
+(set s 'b 5)

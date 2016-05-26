@@ -2,13 +2,16 @@
 {
 	public enum ItemType
 	{
+		None,
+		Any,
+
 		Type,
 
 		Number,
 		String,
 
 		Symbol,
-		SymbolSpace,
+		Space,
 		List,
 		Invokeable
 	}

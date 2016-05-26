@@ -1,6 +1,7 @@
 ﻿namespace EnnuiScript.Items
 {
 	using System;
+	using System.Linq;
 
 	public class ValueItem : Item
 	{
@@ -42,6 +43,13 @@
 			}
 
 			return $"value ({typeName}) {value}";
+		}
+
+		public override string Print(int indent = 0)
+		{
+			return
+				string.Concat(Enumerable.Repeat("\t", indent)) +
+				this.Value;
 		}
 	}
 }

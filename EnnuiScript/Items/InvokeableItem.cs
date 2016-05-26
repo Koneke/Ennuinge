@@ -23,9 +23,15 @@
 			return args => types.Contains(args[index].ItemType);
 		}
 
+		private static bool TypeMatches(Item item, ItemType type)
+		{
+			return type == ItemType.Any || item.ItemType == type;
+		}
+
 		public static Func<List<Item>, bool> DemandType(int index, ItemType type)
 		{
-			return args => args[index].ItemType == type;
+			//return args => type == ItemType.Any || args[index].ItemType == type;
+			return args => TypeMatches(args[index], type);
 		}
 
 		public static Func<List<Item>, bool> DemandTypes(params ItemType[] types)
@@ -36,7 +42,7 @@
 		public static Func<List<Item>, bool> DemandTypes(int startIndex, params ItemType[] types)
 		{
 			return args => Enumerable.Range(startIndex, types.Length)
-				.All(index => args[index].ItemType == types[index]);
+				.All(index => TypeMatches(args[index], types[index]));
 		}
 
 		public List<Func<List<Item>, bool>> Demands;
@@ -69,9 +75,19 @@
 
 			var result = this.Function(space, items);
 
-			if (result.ItemType != this.ReturnType)
+			if (result == null)
 			{
-				throw new Exception("Function returned improper type.");
+				if (this.ReturnType != ItemType.None)
+				{
+					throw new Exception("Non-void function returned void.");
+				}
+			}
+			else
+			{
+				if (this.ReturnType != ItemType.Any && this.ReturnType != result.ItemType)
+				{
+					throw new Exception("Function returned improper type.");
+				}
 			}
 
 			return result;
@@ -79,7 +95,14 @@
 
 		public override string ToString()
 		{
-			return "invokeable";
+			return $"invokeable:{this.ReturnType}";
+		}
+
+		public override string Print(int indent = 0)
+		{
+			return
+				string.Concat(Enumerable.Repeat("\t", indent)) +
+				this;
 		}
 	}
 }
