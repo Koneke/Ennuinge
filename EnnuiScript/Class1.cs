@@ -3,6 +3,7 @@
 	using System;
 	using System.Linq;
 	using Items;
+	using Utils;
 
 	public class Class1
 	{
@@ -15,8 +16,8 @@
 			{
 				ReturnType = ItemType.Symbol,
 
-				Demands = InvokeableItem.MakeDemands(
-					InvokeableItem.DemandTypes(ItemType.Symbol, ItemType.Space),
+				Demands = InvokeableUtils.MakeDemands(
+					InvokeableUtils.DemandTypes(ItemType.Symbol, ItemType.Space),
 					args => args.Count == 2),
 
 				Function = (space, args) =>
@@ -48,8 +49,8 @@
 			{
 				ReturnType = ItemType.Any,
 
-				Demands = InvokeableItem.MakeDemands(
-					InvokeableItem.DemandType(0, ItemType.Symbol),
+				Demands = InvokeableUtils.MakeDemands(
+					InvokeableUtils.DemandType(0, ItemType.Symbol),
 					args => args.Count == 1),
 
 				Function = (space, args) =>
@@ -73,8 +74,8 @@
 			{
 				ReturnType = ItemType.Any,
 
-				Demands = InvokeableItem.MakeDemands(
-					InvokeableItem.DemandOfAnyType(0,
+				Demands = InvokeableUtils.MakeDemands(
+					InvokeableUtils.DemandOfAnyType(0,
 						ItemType.Symbol,
 						ItemType.List),
 					args => args.Count == 1),
@@ -100,8 +101,8 @@
 			{
 				ReturnType = ItemType.Any,
 
-				Demands = InvokeableItem.MakeDemands(
-					InvokeableItem.DemandTypes(
+				Demands = InvokeableUtils.MakeDemands(
+					InvokeableUtils.DemandTypes(
 						ItemType.Space,
 						ItemType.List),
 					args => args.Count == 2),
@@ -132,7 +133,7 @@
 			{
 				ReturnType = ItemType.None,
 
-				Demands = InvokeableItem.MakeDemands(args => args.Count == 1),
+				Demands = InvokeableUtils.MakeDemands(args => args.Count == 1),
 
 				Function = (space, args) =>
 				{
@@ -150,9 +151,9 @@
 			{
 				ReturnType = ItemType.Number,
 
-				Demands = InvokeableItem.MakeDemands(
+				Demands = InvokeableUtils.MakeDemands(
 					args => args.Count == 1,
-					InvokeableItem.DemandType(0, ItemType.Number)),
+					InvokeableUtils.DemandType(0, ItemType.Number)),
 
 				Function = (space, args) =>
 				{
@@ -171,7 +172,7 @@
 			{
 				ReturnType = ItemType.Symbol,
 
-				Demands = InvokeableItem.MakeDemands(InvokeableItem.DemandOfAnyType(0, ItemType.List, ItemType.Symbol)),
+				Demands = InvokeableUtils.MakeDemands(InvokeableUtils.DemandOfAnyType(0, ItemType.List, ItemType.Symbol)),
 
 				Function = (space, args) =>
 				{
@@ -190,7 +191,7 @@
 			{
 				ReturnType = ItemType.Symbol,
 
-				Demands = InvokeableItem.MakeDemands(InvokeableItem.DemandOfAnyType(0, ItemType.List, ItemType.Symbol)),
+				Demands = InvokeableUtils.MakeDemands(InvokeableUtils.DemandOfAnyType(0, ItemType.List, ItemType.Symbol)),
 
 				Function = (space, args) =>
 				{
@@ -209,8 +210,8 @@
 			{
 				ReturnType = ItemType.Space,
 
-				Demands = InvokeableItem.MakeDemands(
-					InvokeableItem.DemandType(0, ItemType.List),
+				Demands = InvokeableUtils.MakeDemands(
+					InvokeableUtils.DemandType(0, ItemType.List),
 					args => (args[0] as ListItem).Expression.HasEvenLength(),
 					args => (args[0] as ListItem).Expression
 						.GroupingSelect(2)
@@ -240,7 +241,7 @@
 			{
 				ReturnType = ItemType.Symbol,
 
-				Demands = InvokeableItem.MakeDemands(InvokeableItem.DemandType(0, ItemType.Symbol)),
+				Demands = InvokeableUtils.MakeDemands(InvokeableUtils.DemandType(0, ItemType.Symbol)),
 
 				Function = (space, args) =>
 				{
@@ -263,8 +264,8 @@
 			{
 				ReturnType = ItemType.Symbol,
 
-				Demands = InvokeableItem.MakeDemands(
-					InvokeableItem.DemandTypes(
+				Demands = InvokeableUtils.MakeDemands(
+					InvokeableUtils.DemandTypes(
 						ItemType.Space,
 						ItemType.Symbol)),
 
@@ -286,8 +287,8 @@
 			{
 				ReturnType = ItemType.Invokeable,
 
-				Demands = InvokeableItem.MakeDemands(
-					InvokeableItem.DemandTypes(
+				Demands = InvokeableUtils.MakeDemands(
+					InvokeableUtils.DemandTypes(
 						ItemType.Symbol,
 						ItemType.Type,
 						ItemType.List,
@@ -322,7 +323,7 @@
 					{
 						ReturnType = returnType.Type,
 
-						Demands = InvokeableItem.MakeDemands(InvokeableItem.DemandTypes(argumentTypes)),
+						Demands = InvokeableUtils.MakeDemands(InvokeableUtils.DemandTypes(argumentTypes)),
 						
 						// create symbol space,
 						// bind fnargs,
@@ -357,7 +358,7 @@
 			{
 				ReturnType = ItemType.Number,
 
-				Demands = InvokeableItem.MakeDemands(
+				Demands = InvokeableUtils.MakeDemands(
 					args => args.All(arg => arg.ItemType == ItemType.Number)
 				),
 
