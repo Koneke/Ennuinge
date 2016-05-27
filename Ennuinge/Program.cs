@@ -6,7 +6,7 @@
 	{
 		static void Main(string[] args)
 		{
-			var test = new Class1();
+			var test = new Repl();
 			test.Main();
 		}
 	}

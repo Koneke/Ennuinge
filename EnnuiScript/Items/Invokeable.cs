@@ -11,8 +11,9 @@
 
 		public bool EvaluateDemands(List<Item> args)
 		{
-			foreach (var demand in this.Demands)
+			for (int index = 0; index < this.Demands.Count; index++)
 			{
+				var demand = this.Demands[index];
 				if (!demand(args))
 				{
 					return false;

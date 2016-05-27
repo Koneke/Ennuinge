@@ -54,7 +54,7 @@
     <Compile Include="Builtins\BuiltIns.Print.cs" />
     <Compile Include="Builtins\BuiltIns.Quote.cs" />
     <Compile Include="Builtins\BuiltIns.Unquote.cs" />
-    <Compile Include="Class1.cs" />
+    <Compile Include="Repl.cs" />
     <Compile Include="Items\EvaluateableItem.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Items\Invokeable.cs" />

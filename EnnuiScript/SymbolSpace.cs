@@ -6,13 +6,17 @@ namespace EnnuiScript
 
 	public class SymbolSpace
 	{
+		public const string SuperString = "*super";
+		public const string LocalString = "*local";
+
 		public Dictionary<string, Item> Bindings;
 		private SymbolSpace Parent { get; set; }
 
 		public void SetParent(SymbolSpace space)
 		{
 			this.Parent = space;
-			this.Bind("super", new SymbolSpaceItem(space));
+			this.Bind(SuperString, new SymbolSpaceItem(space));
+			this.Bind(LocalString, new SymbolSpaceItem(this));
 		}
 
 		public SymbolSpace(SymbolSpace parent)

@@ -48,7 +48,8 @@
 				string.Join(
 					"\n",
 					this.Space.Bindings.Keys
-						.Where(k => k != "super")
+						.Where(k => k != SymbolSpace.SuperString)
+						.Where(k => k != SymbolSpace.LocalString)
 						.Select(k => indentation + "\t" + smartPrint(k))
 				) +
 				"\n" +
