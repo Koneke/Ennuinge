@@ -6,6 +6,9 @@ Debug
 debug
 Bin
 bin
+.vs/
+.suo
+*.suo
 
 # OS X
 ####################
