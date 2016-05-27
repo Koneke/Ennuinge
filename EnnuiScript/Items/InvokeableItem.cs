@@ -4,23 +4,19 @@
 	using System.Collections.Generic;
 	using System.Linq;
 
-	public class InvokeableItem : Item // function
+	public class Invokeable // function
 	{
 		public List<Func<List<Item>, bool>> Demands;
 		public Func<SymbolSpace, List<Item>, Item> Function;
 		public ItemType ReturnType;
 
-		public InvokeableItem() : base(ItemType.Invokeable)
-		{
-		}
-
-		private bool EvaluateDemands(List<Item> args)
+		public bool EvaluateDemands(List<Item> args)
 		{
 			foreach (var demand in this.Demands)
 			{
 				if (!demand(args))
 				{
-					throw new Exception("Failed demands.");
+					return false;
 				}
 			}
 
@@ -53,10 +49,38 @@
 
 			return result;
 		}
+	}
+
+	public class InvokeableItem : Item // function
+	{
+		private readonly List<Invokeable> invokeables;
+
+		public InvokeableItem() : base(ItemType.Invokeable)
+		{
+			this.invokeables = new List<Invokeable>();
+		}
+
+		public void AddInvokeable(Invokeable invokeable)
+		{
+			this.invokeables.Add(invokeable);
+		}
+
+		public Item Invoke(SymbolSpace space, List<Item> items)
+		{
+			foreach (var invokeable in this.invokeables)
+			{
+				if (invokeable.EvaluateDemands(items))
+				{
+					return invokeable.Invoke(space, items);
+				}
+			}
+
+			throw new Exception("No matching signature in invokeable collection.");
+		}
 
 		public override string ToString()
 		{
-			return $"invokeable:{this.ReturnType}";
+			return $"invokeable-collection";
 		}
 
 		public override string Print(int indent = 0)

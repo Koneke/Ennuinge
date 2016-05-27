@@ -1,6 +1,7 @@
 ﻿namespace EnnuiScript
 {
 	using System;
+	using System.Collections.Generic;
 	using System.Linq;
 	using Items;
 	using Utils;
@@ -12,7 +13,8 @@
 
 		private void SetupBind()
 		{
-			var fn = new InvokeableItem
+			var invo = new InvokeableItem();
+			var fn = new Invokeable
 			{
 				ReturnType = ItemType.Symbol,
 
@@ -31,7 +33,8 @@
 				}
 			};
 
-			this.globalSpace.Bind("bind", fn);
+			invo.AddInvokeable(fn);
+			this.globalSpace.Bind("bind", invo);
 		}
 
 		private Item Deref(SymbolSpace space, SymbolItem symbol)
@@ -45,7 +48,8 @@
 
 		private void SetupDeref()
 		{
-			var fn = new InvokeableItem
+			var invo = new InvokeableItem();
+			var fn = new Invokeable
 			{
 				ReturnType = ItemType.Any,
 
@@ -65,12 +69,14 @@
 				}
 			};
 
-			this.globalSpace.Bind("deref-symbol", fn);
+			invo.AddInvokeable(fn);
+			this.globalSpace.Bind("deref-symbol", invo);
 		}
 
 		private void SetupEvaluate()
 		{
-			var fn = new InvokeableItem
+			var invo = new InvokeableItem();
+			var fn = new Invokeable
 			{
 				ReturnType = ItemType.Any,
 
@@ -92,12 +98,14 @@
 				}
 			};
 
-			this.globalSpace.Bind(";", fn);
+			invo.AddInvokeable(fn);
+			this.globalSpace.Bind(";", invo);
 		}
 
 		private void SetupIn()
 		{
-			var fn = new InvokeableItem
+			var invo = new InvokeableItem();
+			var fn = new Invokeable
 			{
 				ReturnType = ItemType.Any,
 
@@ -124,12 +132,14 @@
 				}
 			};
 
-			this.globalSpace.Bind("in", fn);
+			invo.AddInvokeable(fn);
+			this.globalSpace.Bind("in", invo);
 		}
 
 		private void SetupPrint()
 		{
-			var fn = new InvokeableItem
+			var invo = new InvokeableItem();
+			var fn = new Invokeable
 			{
 				ReturnType = ItemType.None,
 
@@ -142,12 +152,14 @@
 				}
 			};
 
-			this.globalSpace.Bind("print", fn);
+			invo.AddInvokeable(fn);
+			this.globalSpace.Bind("print", invo);
 		}
 
 		private void SetupNegate()
 		{
-			var fn = new InvokeableItem
+			var invo = new InvokeableItem();
+			var fn = new Invokeable
 			{
 				ReturnType = ItemType.Number,
 
@@ -163,12 +175,14 @@
 				}
 			};
 
-			this.globalSpace.Bind("_", fn);
+			invo.AddInvokeable(fn);
+			this.globalSpace.Bind("_", invo);
 		}
 
 		private void SetupQuote()
 		{
-			var fn = new InvokeableItem
+			var invo = new InvokeableItem();
+			var fn = new Invokeable
 			{
 				ReturnType = ItemType.Symbol,
 
@@ -181,13 +195,15 @@
 				}
 			};
 
-			this.globalSpace.Bind("`", fn);
-			this.globalSpace.Bind("quote", fn);
+			invo.AddInvokeable(fn);
+			this.globalSpace.Bind("`", invo);
+			this.globalSpace.Bind("quote", invo);
 		}
 
 		private void SetupUnquote()
 		{
-			var fn = new InvokeableItem
+			var invo = new InvokeableItem();
+			var fn = new Invokeable
 			{
 				ReturnType = ItemType.Symbol,
 
@@ -200,13 +216,15 @@
 				}
 			};
 
-			this.globalSpace.Bind(",", fn);
-			this.globalSpace.Bind("unquote", fn);
+			invo.AddInvokeable(fn);
+			this.globalSpace.Bind(",", invo);
+			this.globalSpace.Bind("unquote", invo);
 		}
 
 		private void SetupMakeSpace()
 		{
-			var fn = new InvokeableItem()
+			var invo = new InvokeableItem();
+			var fn = new Invokeable
 			{
 				ReturnType = ItemType.Space,
 
@@ -232,12 +250,14 @@
 				}
 			};
 
-			this.globalSpace.Bind("make-space", fn);
+			invo.AddInvokeable(fn);
+			this.globalSpace.Bind("make-space", invo);
 		}
 
 		private void SetupDef()
 		{
-			var fn = new InvokeableItem
+			var invo = new InvokeableItem();
+			var fn = new Invokeable
 			{
 				ReturnType = ItemType.Symbol,
 
@@ -255,12 +275,14 @@
 				}
 			};
 
-			this.globalSpace.Bind("def", fn);
+			invo.AddInvokeable(fn);
+			this.globalSpace.Bind("def", invo);
 		}
 
 		private void SetupGet()
 		{
-			var fn = new InvokeableItem
+			var invo = new InvokeableItem();
+			var fn = new Invokeable
 			{
 				ReturnType = ItemType.Symbol,
 
@@ -278,48 +300,53 @@
 				}
 			};
 
-			this.globalSpace.Bind("get", fn);
+			invo.AddInvokeable(fn);
+			this.globalSpace.Bind("get", invo);
 		}
 
 		private void SetupDefn()
 		{
-			var fn = new InvokeableItem
+			const int typeIndex = 0;
+			const int paramsIndex = 1;
+			const int bodyIndex = 2;
+
+			Func<Item, List<Tuple<Item, Item>>> groupArguments = l =>
+				(l as ListItem).Expression
+					.GroupingSelect(2, xs => new Tuple<Item, Item>(xs[0], xs[1]));
+
+			Func<List<Item>, ListItem> getParams = args => (args[paramsIndex] as ListItem);
+
+			// now to the meat of things
+
+			var invo = new InvokeableItem();
+
+			var fn = new Invokeable
 			{
 				ReturnType = ItemType.Invokeable,
 
 				Demands = InvokeableUtils.MakeDemands(
-					InvokeableUtils.DemandTypes(
-						ItemType.Symbol,
-						ItemType.Type,
-						ItemType.List,
-						ItemType.List),
-
-					args => (args[2] as ListItem).Expression.Count % 2 == 0,
-
-					args =>
-					{
-						var argumentList = (args[2] as ListItem).Expression;
-						return argumentList
-							.GroupingSelect(2, xs => new Tuple<Item, Item>(xs[0], xs[1]))
-							.All(pair =>
-								pair.Item1.ItemType == ItemType.Symbol &&
-								pair.Item2.ItemType == ItemType.Type);
-					}
+					InvokeableUtils.DemandTypes(ItemType.Type, ItemType.List, ItemType.List),
+					args => args.Count == 3,
+					args => getParams(args).Expression.HasEvenLength(),
+					args => groupArguments(getParams(args)).All(pair =>
+						pair.Item1.ItemType == ItemType.Symbol &&
+						pair.Item2.ItemType == ItemType.Type)
 				),
 
-				Function = (space, args) => {
-					var symbol = args[0] as SymbolItem;
-					var returnType = args[1] as TypeItem;
-					var argumentList = (args[2] as ListItem).Expression
-						.GroupingSelect(2, xs => new Tuple<Item, Item>(xs[0], xs[1]));
-					var body = args[3] as ListItem;
+				Function = (space, args) =>
+				{
+					var returnType = args[typeIndex] as TypeItem;
+					var argumentList = groupArguments(args[paramsIndex]);
+					var body = args[bodyIndex] as ListItem;
 
 					var argumentTypes = 
 						argumentList
 							.Select(argument => (argument.Item2 as TypeItem).Type)
 							.ToArray();
 
-					var resultingInvokeable = new InvokeableItem()
+					var resultingInvokeable = new InvokeableItem();
+
+					resultingInvokeable.AddInvokeable(new Invokeable()
 					{
 						ReturnType = returnType.Type,
 
@@ -341,20 +368,21 @@
 							body = body.Unquote() as ListItem;
 							return body.Evaluate(newSpace);
 						}
-					};
-
-					space.Bind(symbol.Name, resultingInvokeable);
+					});
 
 					return resultingInvokeable;
 				}
 			};
 
-			this.globalSpace.Bind("=>", fn);
+			invo.AddInvokeable(fn);
+
+			this.globalSpace.Bind("=>", invo);
 		}
 
 		private void SetupAdd()
 		{
-			var add = new InvokeableItem
+			var invo = new InvokeableItem();
+			var add = new Invokeable
 			{
 				ReturnType = ItemType.Number,
 
@@ -370,7 +398,8 @@
 						.Sum())
 			};
 
-			this.globalSpace.Bind("+", add);
+			invo.AddInvokeable(add);
+			this.globalSpace.Bind("+", invo);
 		}
 
 		private Item ParseAndEvaluate(string instring)
