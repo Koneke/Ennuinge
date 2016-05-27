@@ -56,5 +56,17 @@
 				indentation +
 				"}";
 		}
+
+		public override bool Compare(Item item)
+		{
+			if (!this.BasicCompare(item))
+			{
+				return false;
+			}
+
+			var other = item as SymbolSpaceItem;
+
+			return other.Space == this.Space;
+		}
 	}
 }

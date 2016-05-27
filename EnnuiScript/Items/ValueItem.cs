@@ -5,6 +5,17 @@
 
 	public class ValueItem : Item
 	{
+		private static bool IsValueType(ItemType type)
+		{
+			var valueTypes = new[]
+			{
+				ItemType.Number,
+				ItemType.String,
+				ItemType.Bool
+			};
+			return valueTypes.Contains(type);
+		}
+
 		private static object CastedValue(ItemType type, object value)
 		{
 			switch (type)
@@ -13,6 +24,8 @@
 					return (double)value;
 				case ItemType.String:
 					return (string)value;
+				case ItemType.Bool:
+					return (bool)value;
 				default:
 					throw new Exception();
 			}
@@ -42,7 +55,12 @@
 				value = "\"" + value + "\"";
 			}
 
-			return $"value ({typeName}) {value}";
+			if (this.Type == ItemType.Bool)
+			{
+				value = "*" + value;
+			}
+
+			return $"value({typeName}):{value}";
 		}
 
 		public override string Print(int indent = 0)
@@ -50,6 +68,18 @@
 			return
 				string.Concat(Enumerable.Repeat("\t", indent)) +
 				this.Value;
+		}
+
+		public override bool Compare(Item item)
+		{
+			if (!this.BasicCompare(item))
+			{
+				return false;
+			}
+
+			var other = item as ValueItem;
+
+			return other.Value.Equals(this.Value);
 		}
 	}
 }

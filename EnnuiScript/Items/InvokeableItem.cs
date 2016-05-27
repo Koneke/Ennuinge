@@ -42,5 +42,15 @@
 				string.Concat(Enumerable.Repeat("\t", indent)) +
 				this;
 		}
+
+		public override bool Compare(Item item)
+		{
+			if (!this.BasicCompare(item))
+			{
+				return false;
+			}
+
+			return item == this;
+		}
 	}
 }

@@ -138,5 +138,21 @@ namespace EnnuiScript.Items
 				string.Join(" ", this.Expression.Select(item => item.Print())) +
 				")";
 		}
+
+		public override bool Compare(Item item)
+		{
+			if (!this.BasicCompare(item))
+			{
+				return false;
+			}
+
+			var other = item as ListItem;
+
+			return
+				this.Expression.Count == other.Expression.Count &&
+				this.Expression
+					.Zip(other.Expression, (a, b) => a.Compare(b))
+					.All(x => x);
+		}
 	}
 }

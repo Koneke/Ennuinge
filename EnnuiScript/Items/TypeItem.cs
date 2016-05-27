@@ -18,5 +18,17 @@ namespace EnnuiScript.Items
 				string.Concat(Enumerable.Repeat("\t", indent)) +
 				":" + Enum.GetName(typeof(ItemType), this.Type);
 		}
+
+		public override bool Compare(Item item)
+		{
+			if (!this.BasicCompare(item))
+			{
+				return false;
+			}
+
+			var other = item as TypeItem;
+
+			return other.Type == this.Type;
+		}
 	}
 }

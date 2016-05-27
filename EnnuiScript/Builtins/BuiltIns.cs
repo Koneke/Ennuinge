@@ -7,6 +7,7 @@ namespace EnnuiScript.Builtins
 		public static void SetupBuiltins(SymbolSpace space)
 		{
 			globalSpace = space;
+			Equal.Setup();
 			Bind.Setup();
 			DerefSymbol.Setup();
 			Evaluate.Setup();

@@ -4,12 +4,6 @@ namespace EnnuiScript.Items
 
 	public abstract class Item
 	{
-		public static bool IsValueType(ItemType type)
-		{
-			var valueTypes = new[] { ItemType.Number, ItemType.String };
-			return valueTypes.Contains(type);
-		}
-
 		public ItemType ItemType { get; }
 
 		protected Item(ItemType itemType)
@@ -18,5 +12,43 @@ namespace EnnuiScript.Items
 		}
 
 		public abstract string Print(int indent = 0);
+
+		public bool BasicCompare(Item item)
+		{
+			if (item?.ItemType != this.ItemType)
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		public abstract bool Compare(Item item);
+
+		public override bool Equals(object obj)
+		{
+			if (obj == null)
+			{
+				return false;
+			}
+
+			if (!(obj is Item))
+			{
+				return false;
+			}
+
+			var other = obj as Item;
+
+			switch (other.ItemType)
+			{
+				case ItemType.Bool:
+				case ItemType.Number:
+				case ItemType.String:
+					return ((ValueItem)obj).Compare(this);
+
+				default:
+					return false;
+			}
+		}
 	}
 }

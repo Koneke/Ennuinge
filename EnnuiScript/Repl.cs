@@ -20,6 +20,14 @@
 			this.globalSpace = new SymbolSpace(null);
 			this.globalSpace.Bind("*global", new SymbolSpaceItem(this.globalSpace));
 
+			var trueItem = new ValueItem(ItemType.Bool, true);
+			var falseItem = new ValueItem(ItemType.Bool, false);
+
+			this.globalSpace.Bind("*true", trueItem);
+			this.globalSpace.Bind("*t", trueItem);
+			this.globalSpace.Bind("*false", falseItem);
+			this.globalSpace.Bind("*f", falseItem);
+
 			BuiltIns.SetupBuiltins(this.globalSpace);
 
 			var strict = false;

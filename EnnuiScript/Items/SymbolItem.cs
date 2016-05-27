@@ -2,6 +2,7 @@
 {
 	using System.Linq;
 	using System.Collections.Generic;
+	using System;
 
 	public class SymbolItem : EvaluateableItem
 	{
@@ -75,6 +76,21 @@
 			return
 				string.Concat(Enumerable.Repeat("\t", indent)) +
 				(this.IsQuoted ? "'" : string.Empty) + this.Name;
+		}
+
+		public override bool Compare(Item other)
+		{
+			if (!this.BasicCompare(other))
+			{
+				return false;
+			}
+
+			var symbolItem = other as SymbolItem;
+
+			return
+				this.Name == symbolItem.Name &&
+				this.IsQuoted == symbolItem.IsQuoted &&
+				this.BoundSpace == symbolItem.BoundSpace;
 		}
 	}
 }

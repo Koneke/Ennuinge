@@ -9,6 +9,11 @@
 		public Func<SymbolSpace, List<Item>, Item> Function;
 		public ItemType ReturnType;
 
+		public Invokeable()
+		{
+			this.Demands = new List<Func<List<Item>, bool>>();
+		}
+
 		public bool EvaluateDemands(List<Item> args)
 		{
 			for (int index = 0; index < this.Demands.Count; index++)

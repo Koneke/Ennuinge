@@ -9,6 +9,7 @@
 
 		Number,
 		String,
+		Bool,
 
 		Symbol,
 		Space,
