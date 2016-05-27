@@ -40,6 +40,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Builtins\BuiltIns.Add.cs" />
+    <Compile Include="Builtins\BuiltIns.Bind.cs" />
+    <Compile Include="Builtins\BuiltIns.cs" />
+    <Compile Include="Builtins\BuiltIns.Def.cs" />
+    <Compile Include="Builtins\BuiltIns.Defn.cs" />
+    <Compile Include="Builtins\BuiltIns.Deref.cs" />
+    <Compile Include="Builtins\BuiltIns.Evaluate.cs" />
+    <Compile Include="Builtins\BuiltIns.Get.cs" />
+    <Compile Include="Builtins\BuiltIns.In.cs" />
+    <Compile Include="Builtins\BuiltIns.MakeSpace.cs" />
+    <Compile Include="Builtins\BuiltIns.Negate.cs" />
+    <Compile Include="Builtins\BuiltIns.Print.cs" />
+    <Compile Include="Builtins\BuiltIns.Quote.cs" />
+    <Compile Include="Builtins\BuiltIns.Unquote.cs" />
     <Compile Include="Class1.cs" />
     <Compile Include="Items\EvaluateableItem.cs" />
     <Compile Include="Extensions.cs" />

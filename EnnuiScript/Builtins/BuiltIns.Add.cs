@@ -14,8 +14,7 @@
 				ReturnType = ItemType.Number,
 
 				Demands = InvokeableUtils.MakeDemands(
-					args => args.All(arg => arg.ItemType == ItemType.Number)
-					),
+					args => args.All(arg => arg.ItemType == ItemType.Number)),
 
 				Function = (space, args) => new ValueItem(
 					ItemType.Number,
