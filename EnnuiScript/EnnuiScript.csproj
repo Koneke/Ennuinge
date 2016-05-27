@@ -43,6 +43,7 @@
     <Compile Include="Class1.cs" />
     <Compile Include="Items\EvaluateableItem.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="Items\Invokeable.cs" />
     <Compile Include="Items\InvokeableItem.cs" />
     <Compile Include="Utils\InvokeableUtils.cs" />
     <Compile Include="Items\Item.cs" />
