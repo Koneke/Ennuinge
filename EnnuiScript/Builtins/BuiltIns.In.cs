@@ -5,38 +5,41 @@
 	
 	public partial class BuiltIns
 	{
-		private static void SetupIn()
+		private static class In
 		{
-			var invo = new InvokeableItem();
-			var fn = new Invokeable
+			public static void Setup()
 			{
-				ReturnType = ItemType.Any,
-
-				Demands = InvokeableUtils.MakeDemands(
-					InvokeableUtils.DemandTypes(
-						ItemType.Space,
-						ItemType.List),
-					args => args.Count == 2),
-
-				Function = (space, args) =>
+				var invo = new InvokeableItem();
+				var fn = new Invokeable
 				{
-					var symbolSpace = args[0] as SymbolSpaceItem;
-					var expression = args[1] as ListItem;
+					ReturnType = ItemType.Any,
 
-					var spaceParent = symbolSpace.Space.GetParent();
-					symbolSpace.Space.SetParent(space);
-					space.SetParent(spaceParent);
+					Demands = InvokeableUtils.MakeDemands(
+						InvokeableUtils.DemandTypes(
+							ItemType.Space,
+							ItemType.List),
+						args => args.Count == 2),
 
-					var result = expression.Evaluate(symbolSpace.Space);
+					Function = (space, args) =>
+					{
+						var symbolSpace = args[0] as SymbolSpaceItem;
+						var expression = args[1] as ListItem;
 
-					symbolSpace.Space.SetParent(spaceParent);
+						var spaceParent = symbolSpace.Space.GetParent();
+						symbolSpace.Space.SetParent(space);
+						space.SetParent(spaceParent);
 
-					return result;
-				}
-			};
+						var result = expression.Evaluate(symbolSpace.Space);
 
-			invo.AddInvokeable(fn);
-			globalSpace.Bind("in", invo);
+						symbolSpace.Space.SetParent(spaceParent);
+
+						return result;
+					}
+				};
+
+				invo.AddInvokeable(fn);
+				globalSpace.Bind("in", invo);
+			}
 		}
 	}
 }

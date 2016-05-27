@@ -7,19 +7,19 @@ namespace EnnuiScript.Builtins
 		public static void SetupBuiltins(SymbolSpace space)
 		{
 			globalSpace = space;
-			SetupBind();
-			SetupDeref();
-			SetupEvaluate();
-			SetupIn();
-			SetupPrint();
-			SetupNegate();
-			SetupQuote();
-			SetupUnquote();
-			SetupMakeSpace();
-			SetupDef();
-			SetupGet();
-			SetupAdd();
-			SetupDefn();
+			Bind.Setup();
+			DerefSymbol.Setup();
+			Evaluate.Setup();
+			In.Setup();
+			Print.Setup();
+			Negate.Setup();
+			Quote.Setup();
+			Unquote.Setup();
+			MakeSpace.Setup();
+			Def.Setup();
+			Get.Setup();
+			Add.Setup();
+			Defn.Setup();
 		}
 	}
 }

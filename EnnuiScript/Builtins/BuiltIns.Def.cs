@@ -5,29 +5,32 @@
 	
 	public partial class BuiltIns
 	{
-		private static void SetupDef()
+		private static class Def
 		{
-			var invo = new InvokeableItem();
-			var fn = new Invokeable
+			public static void Setup()
 			{
-				ReturnType = ItemType.Symbol,
-
-				Demands = InvokeableUtils.MakeDemands(InvokeableUtils.DemandType(0, ItemType.Symbol)),
-
-				Function = (space, args) =>
+				var invo = new InvokeableItem();
+				var fn = new Invokeable
 				{
-					var symbol = args[0] as SymbolItem;
-					var value = args[1];
-					var bindingSpace = symbol.BoundSpace ?? space;
+					ReturnType = ItemType.Symbol,
 
-					bindingSpace.Bind(symbol.Name, value);
+					Demands = InvokeableUtils.MakeDemands(InvokeableUtils.DemandType(0, ItemType.Symbol)),
 
-					return symbol;
-				}
-			};
+					Function = (space, args) =>
+					{
+						var symbol = args[0] as SymbolItem;
+						var value = args[1];
+						var bindingSpace = symbol.BoundSpace ?? space;
 
-			invo.AddInvokeable(fn);
-			globalSpace.Bind("def", invo);
+						bindingSpace.Bind(symbol.Name, value);
+
+						return symbol;
+					}
+				};
+
+				invo.AddInvokeable(fn);
+				globalSpace.Bind("def", invo);
+			}
 		}
 	}
 }

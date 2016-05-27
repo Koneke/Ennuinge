@@ -5,27 +5,30 @@
 
 	public partial class BuiltIns
 	{
-		private static void SetupNegate()
+		private static class Negate
 		{
-			var invo = new InvokeableItem();
-			var fn = new Invokeable
+			public static void Setup()
 			{
-				ReturnType = ItemType.Number,
-
-				Demands = InvokeableUtils.MakeDemands(
-					args => args.Count == 1,
-					InvokeableUtils.DemandType(0, ItemType.Number)),
-
-				Function = (space, args) =>
+				var invo = new InvokeableItem();
+				var fn = new Invokeable
 				{
-					var item = args[0] as ValueItem;
+					ReturnType = ItemType.Number,
 
-					return new ValueItem(ItemType.Number, -(double)item.Value);
-				}
-			};
+					Demands = InvokeableUtils.MakeDemands(
+						args => args.Count == 1,
+						InvokeableUtils.DemandType(0, ItemType.Number)),
 
-			invo.AddInvokeable(fn);
-			globalSpace.Bind("_", invo);
+					Function = (space, args) =>
+					{
+						var item = args[0] as ValueItem;
+
+						return new ValueItem(ItemType.Number, -(double)item.Value);
+					}
+				};
+
+				invo.AddInvokeable(fn);
+				globalSpace.Bind("_", invo);
+			}
 		}
 	}
 }

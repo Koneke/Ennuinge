@@ -6,24 +6,27 @@
 	
 	public partial class BuiltIns
 	{
-		private static void SetupPrint()
+		private static class Print
 		{
-			var invo = new InvokeableItem();
-			var fn = new Invokeable
+			public static void Setup()
 			{
-				ReturnType = ItemType.None,
-
-				Demands = InvokeableUtils.MakeDemands(args => args.Count == 1),
-
-				Function = (space, args) =>
+				var invo = new InvokeableItem();
+				var fn = new Invokeable
 				{
-					Console.WriteLine(args[0].Print());
-					return null;
-				}
-			};
+					ReturnType = ItemType.None,
 
-			invo.AddInvokeable(fn);
-			globalSpace.Bind("print", invo);
+					Demands = InvokeableUtils.MakeDemands(args => args.Count == 1),
+
+					Function = (space, args) =>
+					{
+						Console.WriteLine(args[0].Print());
+						return null;
+					}
+				};
+
+				invo.AddInvokeable(fn);
+				globalSpace.Bind("print", invo);
+			}
 		}
 	}
 }

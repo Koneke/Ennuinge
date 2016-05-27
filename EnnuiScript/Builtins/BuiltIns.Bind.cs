@@ -5,30 +5,33 @@
 	
 	public partial class BuiltIns
 	{
-		private static void SetupBind()
+		private static class Bind
 		{
-			var invo = new InvokeableItem();
-			var fn = new Invokeable
+			public static void Setup()
 			{
-				ReturnType = ItemType.Symbol,
-
-				Demands = InvokeableUtils.MakeDemands(
-					InvokeableUtils.DemandTypes(ItemType.Symbol, ItemType.Space),
-					args => args.Count == 2),
-
-				Function = (space, args) =>
+				var invo = new InvokeableItem();
+				var fn = new Invokeable
 				{
-					var symbol = args[0] as SymbolItem;
-					var symbolSpace = args[1] as SymbolSpaceItem;
+					ReturnType = ItemType.Symbol,
 
-					symbol.BoundSpace = symbolSpace.Space;
+					Demands = InvokeableUtils.MakeDemands(
+						InvokeableUtils.DemandTypes(ItemType.Symbol, ItemType.Space),
+						args => args.Count == 2),
 
-					return symbol.Quote();
-				}
-			};
+					Function = (space, args) =>
+					{
+						var symbol = args[0] as SymbolItem;
+						var symbolSpace = args[1] as SymbolSpaceItem;
 
-			invo.AddInvokeable(fn);
-			globalSpace.Bind("bind", invo);
+						symbol.BoundSpace = symbolSpace.Space;
+
+						return symbol.Quote();
+					}
+				};
+
+				invo.AddInvokeable(fn);
+				globalSpace.Bind("bind", invo);
+			}
 		}
 	}
 }

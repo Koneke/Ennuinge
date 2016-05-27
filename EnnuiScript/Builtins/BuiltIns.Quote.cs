@@ -5,25 +5,28 @@
 	
 	public partial class BuiltIns
 	{
-		private static void SetupQuote()
+		private static class Quote
 		{
-			var invo = new InvokeableItem();
-			var fn = new Invokeable
+			public static void Setup()
 			{
-				ReturnType = ItemType.Symbol,
-
-				Demands = InvokeableUtils.MakeDemands(InvokeableUtils.DemandOfAnyType(0, ItemType.List, ItemType.Symbol)),
-
-				Function = (space, args) =>
+				var invo = new InvokeableItem();
+				var fn = new Invokeable
 				{
-					var symbol = args[0] as EvaluateableItem;
-					return symbol.Quote();
-				}
-			};
+					ReturnType = ItemType.Symbol,
 
-			invo.AddInvokeable(fn);
-			globalSpace.Bind("`", invo);
-			globalSpace.Bind("quote", invo);
+					Demands = InvokeableUtils.MakeDemands(InvokeableUtils.DemandOfAnyType(0, ItemType.List, ItemType.Symbol)),
+
+					Function = (space, args) =>
+					{
+						var symbol = args[0] as EvaluateableItem;
+						return symbol.Quote();
+					}
+				};
+
+				invo.AddInvokeable(fn);
+				globalSpace.Bind("`", invo);
+				globalSpace.Bind("quote", invo);
+			}
 		}
 	}
 }

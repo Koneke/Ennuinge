@@ -5,33 +5,36 @@
 	
 	public partial class BuiltIns
 	{
-		private static void SetupEvaluate()
+		private static class Evaluate
 		{
-			var invo = new InvokeableItem();
-			var fn = new Invokeable
+			public static void Setup()
 			{
-				ReturnType = ItemType.Any,
-
-				Demands = InvokeableUtils.MakeDemands(
-					InvokeableUtils.DemandOfAnyType(0,
-						ItemType.Symbol,
-						ItemType.List),
-					args => args.Count == 1),
-
-				Function = (space, args) =>
+				var invo = new InvokeableItem();
+				var fn = new Invokeable
 				{
-					var evaluateable = args[0] as EvaluateableItem;
+					ReturnType = ItemType.Any,
 
-					var item = evaluateable is SymbolItem
-						? (EvaluateableItem)(Deref(space, evaluateable as SymbolItem) as EvaluateableItem).Unquote()
-						: evaluateable;
+					Demands = InvokeableUtils.MakeDemands(
+						InvokeableUtils.DemandOfAnyType(0,
+							ItemType.Symbol,
+							ItemType.List),
+						args => args.Count == 1),
 
-					return item.Evaluate(space);
-				}
-			};
+					Function = (space, args) =>
+					{
+						var evaluateable = args[0] as EvaluateableItem;
 
-			invo.AddInvokeable(fn);
-			globalSpace.Bind(";", invo);
+						var item = evaluateable is SymbolItem
+							? (EvaluateableItem)(Deref(space, evaluateable as SymbolItem) as EvaluateableItem).Unquote()
+							: evaluateable;
+
+						return item.Evaluate(space);
+					}
+				};
+
+				invo.AddInvokeable(fn);
+				globalSpace.Bind(";", invo);
+			}
 		}
 	}
 }

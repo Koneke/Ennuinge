@@ -5,40 +5,43 @@
 	
 	public partial class BuiltIns
 	{
-		private static Item Deref(SymbolSpace space, SymbolItem symbol)
+		private static class DerefSymbol
 		{
-			var reference = space.Lookup(symbol.Name);
-
-			return reference is EvaluateableItem
-				? (reference as EvaluateableItem).Quote()
-				: reference;
-		}
-
-		private static void SetupDeref()
-		{
-			var invo = new InvokeableItem();
-			var fn = new Invokeable
+			private static Item Deref(SymbolSpace space, SymbolItem symbol)
 			{
-				ReturnType = ItemType.Any,
+				var reference = space.Lookup(symbol.Name);
 
-				Demands = InvokeableUtils.MakeDemands(
-					InvokeableUtils.DemandType(0, ItemType.Symbol),
-					args => args.Count == 1),
+				return reference is EvaluateableItem
+					? (reference as EvaluateableItem).Quote()
+					: reference;
+			}
 
-				Function = (space, args) =>
+			public static void Setup()
+			{
+				var invo = new InvokeableItem();
+				var fn = new Invokeable
 				{
-					var symbol = args[0] as SymbolItem;
+					ReturnType = ItemType.Any,
 
-					var reference = space.Lookup(symbol.Name);
+					Demands = InvokeableUtils.MakeDemands(
+						InvokeableUtils.DemandType(0, ItemType.Symbol),
+						args => args.Count == 1),
 
-					return reference is EvaluateableItem
-						? (reference as EvaluateableItem).Quote()
-						: reference;
-				}
-			};
+					Function = (space, args) =>
+					{
+						var symbol = args[0] as SymbolItem;
 
-			invo.AddInvokeable(fn);
-			globalSpace.Bind("deref-symbol", invo);
+						var reference = space.Lookup(symbol.Name);
+
+						return reference is EvaluateableItem
+							? (reference as EvaluateableItem).Quote()
+							: reference;
+					}
+				};
+
+				invo.AddInvokeable(fn);
+				globalSpace.Bind("deref-symbol", invo);
+			}
 		}
 	}
 }
