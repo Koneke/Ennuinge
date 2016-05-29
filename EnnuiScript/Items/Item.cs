@@ -27,24 +27,32 @@ namespace EnnuiScript.Items
 
 		public override bool Equals(object obj)
 		{
-			if (obj == null)
-			{
-				return false;
-			}
-
 			if (!(obj is Item))
 			{
 				return false;
 			}
 
-			var other = obj as Item;
+			var other = (Item)obj;
 
 			switch (other.ItemType)
 			{
+				// value comparison
 				case ItemType.Bool:
 				case ItemType.Number:
 				case ItemType.String:
 					return ((ValueItem)obj).Compare(this);
+				case ItemType.List:
+					return ((ListItem)obj).Compare(this);
+				case ItemType.Symbol:
+					return ((SymbolItem)obj).Compare(this);
+				case ItemType.Type:
+					return ((TypeItem)obj).Compare(this);
+
+				// strict reference comparison
+				case ItemType.Space:
+					return ((SymbolSpaceItem)obj).Compare(this);
+				case ItemType.Invokeable:
+					return ((InvokeableItem)obj).Compare(this);
 
 				default:
 					return false;

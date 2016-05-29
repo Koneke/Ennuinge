@@ -50,7 +50,7 @@
 				return false;
 			}
 
-			return item == this;
+			return ReferenceEquals(item, this);
 		}
 	}
 }
