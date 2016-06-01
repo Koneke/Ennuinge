@@ -19,10 +19,18 @@ namespace EnnuiScript
 			this.Bind(LocalString, new SymbolSpaceItem(this));
 		}
 
-		public SymbolSpace(SymbolSpace parent)
+		public SymbolSpace(SymbolSpace parent, IEnumerable<Tuple<SymbolItem, Item>> bound = null)
 		{
 			this.Bindings = new Dictionary<string, Item>();
 			this.SetParent(parent);
+
+			if (bound != null)
+			{
+				foreach (var binding in bound)
+				{
+					this.Bind(binding.Item1.Name, binding.Item2);
+				}
+			}
 		}
 
 		public void Bind(string symbol, Item item)
