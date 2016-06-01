@@ -21,7 +21,7 @@
 				var invo = new InvokeableItem();
 				var fn = new Invokeable
 				{
-					ReturnType = ItemType.Any,
+					ReturnType = ItemType.Something,
 
 					Demands = InvokeableUtils.MakeDemands(
 						InvokeableUtils.DemandType(0, ItemType.Symbol),

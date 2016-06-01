@@ -2,8 +2,9 @@
 {
 	public enum ItemType
 	{
-		None,
-		Any,
+		None, // null
+		Any, //  anything, null or non null
+		Something, // any non null
 
 		Type,
 

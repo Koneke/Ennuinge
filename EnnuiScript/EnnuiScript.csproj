@@ -49,12 +49,15 @@
     <Compile Include="Builtins\BuiltIns.Deref.cs" />
     <Compile Include="Builtins\BuiltIns.Evaluate.cs" />
     <Compile Include="Builtins\BuiltIns.Get.cs" />
+    <Compile Include="Builtins\BuiltIns.If.cs" />
     <Compile Include="Builtins\BuiltIns.In.cs" />
     <Compile Include="Builtins\BuiltIns.MakeSpace.cs" />
     <Compile Include="Builtins\BuiltIns.Negate.cs" />
     <Compile Include="Builtins\BuiltIns.Print.cs" />
     <Compile Include="Builtins\BuiltIns.Quote.cs" />
+    <Compile Include="Builtins\BuiltIns.Unless.cs" />
     <Compile Include="Builtins\BuiltIns.Unquote.cs" />
+    <Compile Include="Builtins\BuiltIns.When.cs" />
     <Compile Include="Repl.cs" />
     <Compile Include="Items\EvaluateableItem.cs" />
     <Compile Include="Extensions.cs" />

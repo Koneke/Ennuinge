@@ -39,14 +39,16 @@
 
 			if (result == null)
 			{
-				if (this.ReturnType != ItemType.None)
+				if (this.ReturnType != ItemType.None && this.ReturnType != ItemType.Any)
 				{
 					throw new Exception("Non-void function returned void.");
 				}
 			}
 			else
 			{
-				if (this.ReturnType != ItemType.Any && this.ReturnType != result.ItemType)
+				if (this.ReturnType != ItemType.Something &&
+					this.ReturnType != ItemType.Any &&
+					this.ReturnType != result.ItemType)
 				{
 					throw new Exception("Function returned improper type.");
 				}

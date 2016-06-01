@@ -26,7 +26,7 @@
 
 		private static bool TypeMatches(Item item, ItemType type)
 		{
-			return type == ItemType.Any || item.ItemType == type;
+			return type == ItemType.Something || item.ItemType == type;
 		}
 
 		public static Func<List<Item>, bool> DemandType(int index, ItemType type)

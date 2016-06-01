@@ -7,6 +7,9 @@ namespace EnnuiScript.Builtins
 		public static void SetupBuiltins(SymbolSpace space)
 		{
 			globalSpace = space;
+			Unless.Setup();
+			When.Setup();
+			If.Setup();
 			Let.Setup();
 			Equal.Setup();
 			Bind.Setup();
