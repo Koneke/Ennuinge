@@ -42,6 +42,10 @@
 				Console.Write($"{prompt} ");
 				var input = Console.ReadLine();
 
+				// 4 spaces, because that's how the windows console works
+				// we'll probably have to do a nicer solution later
+				input = input.Replace("\t", "    ");
+
 				if (string.IsNullOrEmpty(input))
 				{
 					continue;
