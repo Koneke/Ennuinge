@@ -44,7 +44,26 @@
 
 				// 4 spaces, because that's how the windows console works
 				// we'll probably have to do a nicer solution later
-				input = input.Replace("\t", "    ");
+				for (var i = 0; i < input.Length; i++)
+				{
+					var c = input[i];
+
+					if (c == '\t')
+					{
+						var tabLength = 8 - (1 + i + prompt.Length) % 8;
+						var tab = tabLength == 0
+							? ""
+							: string.Join(
+								"",
+								Enumerable.Repeat(" ", tabLength));
+
+						input = input
+							.Remove(i, 1)
+							.Insert(i, tab);
+
+						i += tabLength - 1;
+					}
+				}
 
 				if (string.IsNullOrEmpty(input))
 				{
