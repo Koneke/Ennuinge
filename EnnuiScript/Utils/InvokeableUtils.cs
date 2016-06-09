@@ -3,7 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
-	using EnnuiScript.Items;
+	using Items;
 
 	public class InvokeableUtils
 	{
@@ -43,6 +43,11 @@
 		{
 			return args => Enumerable.Range(startIndex, types.Length)
 				.All(index => TypeMatches(args[index], types[index]));
+		}
+
+		public static Func<List<Item>, bool> DemandCount(int count)
+		{
+			return args => args.Count == count;
 		}
 	}
 }

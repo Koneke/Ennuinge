@@ -2,19 +2,115 @@
 {
 	using System;
 	using System.Linq;
+	using System.Reflection;
+	using System.Collections.Generic;
 	using Items;
 	using Builtins;
+	using Utils;
 
 	public class Repl
 	{
-		private Parser parser;
-		private SymbolSpace globalSpace;
+		private readonly Parser parser;
+		private readonly SymbolSpace globalSpace;
+
 		private Item ParseAndEvaluate(string instring)
 		{
 			return this.parser.Parse(instring).Evaluate(this.globalSpace);
 		}
 
-		public void Main()
+		private ItemType GetReturnTypeFromMethodInfo(MethodInfo mi)
+		{
+			if (mi.ReturnType == typeof(void))
+			{
+				return ItemType.None;
+			}
+
+			return this.GetTypeFromClrType(mi.ReturnType);
+		}
+
+		private ItemType GetTypeFromClrType(Type type)
+		{
+			if (type == typeof(int) || type == typeof(float) || type == typeof(double))
+			{
+				return ItemType.Number;
+			}
+
+			if (type == typeof(string))
+			{
+				return ItemType.String;
+			}
+
+			if (type == typeof(object))
+			{
+				return ItemType.Any;
+			}
+
+			if (type == typeof(bool))
+			{
+				return ItemType.Bool;
+			}
+
+			throw new ArgumentException();
+		}
+
+		private List<Func<List<Item>, bool>> GetParameterDemandsFromMethodInfo(MethodInfo mi)
+		{
+			var parameters = mi.GetParameters();
+
+			Func<ParameterInfo, int, Func<List<Item>, bool>> getDemandForParameter = (p, i) =>
+				InvokeableUtils.DemandType(i, this.GetTypeFromClrType(p.ParameterType));
+
+			var countDemand = InvokeableUtils.DemandCount(parameters.Count());
+
+			var typeDemands = parameters
+				.Select((p, i) => getDemandForParameter(p, i));
+
+			var demands = new List<Func<List<Item>, bool>> { countDemand };
+			demands.AddRange(typeDemands);
+
+			return InvokeableUtils.MakeDemands(demands.ToArray());
+		}
+
+		public void BindMethod(string symbol, MethodInfo mi, object boundObject)
+		{
+			var invokeable = new InvokeableItem();
+
+			var fn = new Invokeable()
+			{
+				ReturnType = this.GetReturnTypeFromMethodInfo(mi),
+
+				Demands = this.GetParameterDemandsFromMethodInfo(mi),
+
+				Function = (space, args) =>
+				{
+					if (!args.All(i => ValueItem.IsValueType(i.ItemType)))
+					{
+						throw new Exception("Tried calling bound method with non-value arguments.");
+					}
+
+					var arguments = args
+						.Select(i => i as ValueItem)
+						.Select(i => i.Value)
+						.ToArray();
+
+					var result = mi.Invoke(boundObject, arguments);
+
+					if (result != null)
+					{
+						var resultType = this.GetTypeFromClrType(result.GetType());
+						var resultItem = new ValueItem(resultType, result);
+						return resultItem;
+					}
+
+					return null;
+				}
+			};
+
+			invokeable.AddInvokeable(fn);
+			this.globalSpace.Bind(symbol, invokeable);
+		}
+
+		public Repl()
 		{
 			this.parser = new Parser();
 			this.globalSpace = new SymbolSpace(null);
@@ -29,7 +125,10 @@
 			this.globalSpace.Bind("*f", falseItem);
 
 			BuiltIns.SetupBuiltins(this.globalSpace);
+		}
 
+		public void Main()
+		{
 			var strict = false;
 			var accumulator = "";
 

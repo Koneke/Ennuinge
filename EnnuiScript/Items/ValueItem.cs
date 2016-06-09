@@ -5,7 +5,7 @@
 
 	public class ValueItem : Item
 	{
-		private static bool IsValueType(ItemType type)
+		public static bool IsValueType(ItemType type)
 		{
 			var valueTypes = new[]
 			{
@@ -13,6 +13,7 @@
 				ItemType.String,
 				ItemType.Bool
 			};
+
 			return valueTypes.Contains(type);
 		}
 
